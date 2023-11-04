@@ -148,6 +148,7 @@ export class OpenAI extends Core.APIClient {
   models: API.Models = new API.Models(this);
   fineTuning: API.FineTuning = new API.FineTuning(this);
   fineTunes: API.FineTunes = new API.FineTunes(this);
+  beta: API.Beta = new API.Beta(this);
 
   protected override defaultQuery(): Core.DefaultQuery | undefined {
     return this._options.defaultQuery;
@@ -287,6 +288,8 @@ export namespace OpenAI {
     API.FineTuneListEventsParamsNonStreaming;
   export type FineTuneListEventsParamsStreaming =
     API.FineTuneListEventsParamsStreaming;
+
+  export import Beta = API.Beta;
 }
 
 export default OpenAI;

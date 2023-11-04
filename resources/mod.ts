@@ -2,6 +2,7 @@
 
 export * from "./chat/mod.ts";
 export { Audio } from "./audio/audio.ts";
+export { Beta } from "./beta/beta.ts";
 export {
   type Completion,
   type CompletionChoice,

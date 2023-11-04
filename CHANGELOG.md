@@ -1,5 +1,47 @@
 # Changelog
 
+## 4.15.1 (2023-11-04)
+
+Full Changelog:
+[v4.15.0...v4.15.1](https://github.com/openai/openai-node/compare/v4.15.0...v4.15.1)
+
+### Documentation
+
+- document customizing fetch
+  ([#420](https://github.com/openai/openai-node/issues/420))
+  ([1ca982f](https://github.com/openai/openai-node/commit/1ca982f192daf49e33b7acb5505ed26c9d891255))
+
+## 4.15.0 (2023-11-03)
+
+Full Changelog:
+[v4.14.2...v4.15.0](https://github.com/openai/openai-node/compare/v4.14.2...v4.15.0)
+
+### Features
+
+- **beta:** add streaming and function calling helpers
+  ([#409](https://github.com/openai/openai-node/issues/409))
+  ([510c1f3](https://github.com/openai/openai-node/commit/510c1f325ee55197b4c2f434475128c265500746))
+- **client:** allow binary returns
+  ([#416](https://github.com/openai/openai-node/issues/416))
+  ([02f7ad7](https://github.com/openai/openai-node/commit/02f7ad7f736751e0e7687e6744bae464d4e40b79))
+- **github:** include a devcontainer setup
+  ([#413](https://github.com/openai/openai-node/issues/413))
+  ([fb2996f](https://github.com/openai/openai-node/commit/fb2996f0d291210878145aacf9b952f8133d9414))
+- streaming improvements
+  ([#411](https://github.com/openai/openai-node/issues/411))
+  ([37b622c](https://github.com/openai/openai-node/commit/37b622c79ddbd6c286b730e740403c82b542e796))
+
+## 4.14.2 (2023-10-30)
+
+Full Changelog:
+[v4.14.1...v4.14.2](https://github.com/openai/openai-node/compare/v4.14.1...v4.14.2)
+
+### Chores
+
+- **docs:** update deno link
+  ([#407](https://github.com/openai/openai-node/issues/407))
+  ([0328882](https://github.com/openai/openai-node/commit/0328882cccb3e5386283ffa5eb9cd8ad9442f3a0))
+
 ## 4.14.1 (2023-10-27)
 
 Full Changelog:

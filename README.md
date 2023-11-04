@@ -26,7 +26,7 @@ You can import in Deno via:
 <!-- x-release-please-start-version -->
 
 ```ts
-import OpenAI from "https://raw.githubusercontent.com/openai/openai-node/v4.14.0-deno/mod.ts";
+import OpenAI from "https://raw.githubusercontent.com/openai/openai-node/v4.15.0-deno/mod.ts";
 ```
 
 <!-- x-release-please-end -->
@@ -112,6 +112,129 @@ in docstrings and will appear on hover in most modern editors.
 > [!IMPORTANT] Previous versions of this SDK used a `Configuration` class. See
 > the
 > [v3 to v4 migration guide](https://github.com/openai/openai-node/discussions/217).
+
+### Streaming responses
+
+This library provides several conveniences for streaming chat completions, for
+example:
+
+```ts
+import OpenAI from "openai";
+
+const openai = new OpenAI();
+
+async function main() {
+  const stream = await openai.beta.chat.completions.stream({
+    model: "gpt-4",
+    messages: [{ role: "user", content: "Say this is a test" }],
+    stream: true,
+  });
+
+  stream.on("content", (delta, snapshot) => {
+    process.stdout.write(delta);
+  });
+
+  // or, equivalently:
+  for await (const part of stream) {
+    process.stdout.write(part.choices[0]?.delta?.content || "");
+  }
+
+  const chatCompletion = await stream.finalChatCompletion();
+  console.log(chatCompletion); // {id: "…", choices: […], …}
+}
+
+main();
+```
+
+Streaming with `openai.beta.chat.completions.stream({…})` exposes
+[various helpers for your convenience](helpers.md#events) including event
+handlers and promises.
+
+Alternatively, you can use `openai.chat.completions.create({ stream: true, … })`
+which only returns an async iterable of the chunks in the stream and thus uses
+less memory (it does not build up a final chat completion object for you).
+
+If you need to cancel a stream, you can `break` from a `for await` loop or call
+`stream.abort()`.
+
+### Automated function calls
+
+We provide a `openai.beta.chat.completions.runFunctions({…})` convenience helper
+for using function calls with the `/chat/completions` endpoint which
+automatically calls the JavaScript functions you provide and sends their results
+back to the `/chat/completions` endpoint, looping as long as the model requests
+function calls.
+
+If you pass a `parse` function, it will automatically parse the `arguments` for
+you and returns any parsing errors to the model to attempt auto-recovery.
+Otherwise, the args will be passed to the function you provide as a string.
+
+If you pass `function_call: {name: …}` instead of `auto`, it returns immediately
+after calling that function (and only loops to auto-recover parsing errors).
+
+```ts
+import OpenAI from "openai";
+
+const client = new OpenAI();
+
+async function main() {
+  const runner = client.beta.chat.completions
+    .runFunctions({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: "How is the weather this week?" }],
+      functions: [
+        {
+          function: getCurrentLocation,
+          parameters: { type: "object", properties: {} },
+        },
+        {
+          function: getWeather,
+          parse: JSON.parse, // or use a validation library like zod for typesafe parsing.
+          parameters: {
+            type: "object",
+            properties: {
+              location: { type: "string" },
+            },
+          },
+        },
+      ],
+    })
+    .on("message", (message) => console.log(message));
+
+  const finalContent = await runner.finalContent();
+  console.log();
+  console.log("Final content:", finalContent);
+}
+
+async function getCurrentLocation() {
+  return "Boston"; // Simulate lookup
+}
+
+async function getWeather(args: { location: string }) {
+  const { location } = args;
+  // … do lookup …
+  return { temperature, precipitation };
+}
+
+main();
+
+// {role: "user",      content: "How's the weather this week?"}
+// {role: "assistant", function_call: "getCurrentLocation", arguments: "{}"}
+// {role: "function",  name: "getCurrentLocation", content: "Boston"}
+// {role: "assistant", function_call: "getWeather", arguments: '{"location": "Boston"}'}
+// {role: "function",  name: "getWeather", content: '{"temperature": "50degF", "preciptation": "high"}'}
+// {role: "assistant", content: "It's looking cold and rainy - you might want to wear a jacket!"}
+//
+// Final content: "It's looking cold and rainy - you might want to wear a jacket!"
+```
+
+Like with `.stream()`, we provide a variety of
+[helpers and events](helpers.md#events).
+
+Read more about various examples such as with integrating with
+[zod](helpers.md#integrate-with-zod),
+[next.js](helpers.md#integrate-wtih-next-js), and [proxying a stream to the
+browser](helpers.md#proxy-streaming to-a-browser).
 
 ## File Uploads
 
@@ -331,6 +454,52 @@ const { data: chatCompletion, response: raw } = await openai.chat.completions
 console.log(raw.headers.get("X-My-Header"));
 console.log(chatCompletion.choices);
 ```
+
+## Customizing the fetch client
+
+By default, this library uses `node-fetch` in Node, and expects a global `fetch`
+function in other environments.
+
+If you would prefer to use a global, web-standards-compliant `fetch` function
+even in a Node environment, (for example, if you are running Node with
+`--experimental-fetch` or using NextJS which polyfills with `undici`), add the
+following import before your first import `from "OpenAI"`:
+
+<!-- prettier-ignore -->
+
+```ts
+// Tell TypeScript and the package to use the global web fetch instead of node-fetch.
+// Note, despite the name, this does not add any polyfills, but expects them to be provided if needed.
+import "openai/shims/web";
+import OpenAI from "openai";
+```
+
+To do the inverse, add `import "openai/shims/node"` (which does import
+polyfills). This can also be useful if you are getting the wrong TypeScript
+types for `Response` - more details
+[here](https://github.com/openai/openai-node/src/_shims#readme).
+
+You may also provide a custom `fetch` function when instantiating the client,
+which can be used to inspect or alter the `Request` or `Response` before/after
+each request:
+
+```ts
+import { fetch } from "undici"; // as one example
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  fetch: (url: RequestInfo, init?: RequestInfo): Response => {
+    console.log("About to make request", url, init);
+    const response = await fetch(url, init);
+    console.log("Got response", response);
+    return response;
+  },
+});
+```
+
+Note that if given a `DEBUG=true` environment variable, this library will log
+all requests and responses automatically. This is intended for debugging
+purposes only and may change in the future without notice.
 
 ## Configuring an HTTP(S) Agent (e.g., for proxies)
 

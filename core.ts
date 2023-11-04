@@ -58,6 +58,10 @@ async function defaultParseResponse<T>(props: APIResponseProps): Promise<T> {
     return null as T;
   }
 
+  if (props.options.__binaryResponse) {
+    return response as unknown as T;
+  }
+
   const contentType = response.headers.get("content-type");
   if (contentType?.includes("application/json")) {
     const json = await response.json();
@@ -67,10 +71,11 @@ async function defaultParseResponse<T>(props: APIResponseProps): Promise<T> {
     return json as T;
   }
 
-  // TODO handle blob, arraybuffer, other content types, etc.
   const text = await response.text();
   debug("response", response.status, response.url, response.headers, text);
-  return text as any as T;
+
+  // TODO handle blob, arraybuffer, other content types, etc.
+  return text as unknown as T;
 }
 
 /**
@@ -833,6 +838,8 @@ export type RequestOptions<
   httpAgent?: Agent;
   signal?: AbortSignal | undefined | null;
   idempotencyKey?: string;
+
+  __binaryResponse?: boolean | undefined;
 };
 
 // This is required so that we can determine if a given object matches the RequestOptions
@@ -851,6 +858,8 @@ const requestOptionsKeys: KeysEnum<RequestOptions> = {
   httpAgent: true,
   signal: true,
   idempotencyKey: true,
+
+  __binaryResponse: true,
 };
 
 export const isRequestOptions = (
