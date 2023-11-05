@@ -1,5 +1,27 @@
 # Changelog
 
+## 4.15.3 (2023-11-04)
+
+Full Changelog:
+[v4.15.2...v4.15.3](https://github.com/openai/openai-node/compare/v4.15.2...v4.15.3)
+
+### Bug Fixes
+
+- improve deno releases
+  ([#425](https://github.com/openai/openai-node/issues/425))
+  ([19469f2](https://github.com/openai/openai-node/commit/19469f266ff69a4e549402188d9f6ad87f5a7778))
+
+## 4.15.2 (2023-11-04)
+
+Full Changelog:
+[v4.15.1...v4.15.2](https://github.com/openai/openai-node/compare/v4.15.1...v4.15.2)
+
+### Documentation
+
+- fix deno.land import
+  ([#423](https://github.com/openai/openai-node/issues/423))
+  ([e5415a2](https://github.com/openai/openai-node/commit/e5415a29ab447ced8535fafda7928b0a6748c8d1))
+
 ## 4.15.1 (2023-11-04)
 
 Full Changelog:
