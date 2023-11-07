@@ -1,5 +1,57 @@
 # Changelog
 
+## 4.16.1 (2023-11-06)
+
+Full Changelog:
+[v4.16.0...v4.16.1](https://github.com/openai/openai-node/compare/v4.16.0...v4.16.1)
+
+### Bug Fixes
+
+- **api:** retreival -&gt; retrieval
+  ([#437](https://github.com/openai/openai-node/issues/437))
+  ([b4bd3ee](https://github.com/openai/openai-node/commit/b4bd3eefdd3903abcc57c431382cc2124d39307b))
+
+### Documentation
+
+- **api:** improve docstrings
+  ([#435](https://github.com/openai/openai-node/issues/435))
+  ([ee8b24c](https://github.com/openai/openai-node/commit/ee8b24c70a5ccb944e02ff2201668d6bc2b597b3))
+
+## 4.16.0 (2023-11-06)
+
+Full Changelog:
+[v4.15.4...v4.16.0](https://github.com/openai/openai-node/compare/v4.15.4...v4.16.0)
+
+### Features
+
+- **api:** releases from DevDay; assistants, multimodality, tools, dall-e-3,
+  tts, and more ([#433](https://github.com/openai/openai-node/issues/433))
+  ([fb92f5e](https://github.com/openai/openai-node/commit/fb92f5e6e3b6e7969b3d91f4ccdaef87e5fea0a4))
+
+### Bug Fixes
+
+- improve deno readme ([#429](https://github.com/openai/openai-node/issues/429))
+  ([871ceac](https://github.com/openai/openai-node/commit/871ceac2b37f53f7fc7c0163454115c709cd7ced))
+
+### Documentation
+
+- deno version ([#432](https://github.com/openai/openai-node/issues/432))
+  ([74bf336](https://github.com/openai/openai-node/commit/74bf3364379fd23252fde01401c44b2fa796cba4))
+- update deno link in more places
+  ([#431](https://github.com/openai/openai-node/issues/431))
+  ([5da63d4](https://github.com/openai/openai-node/commit/5da63d4a9143c0ab493b742f7fde22b01a372844))
+
+## 4.15.4 (2023-11-05)
+
+Full Changelog:
+[v4.15.3...v4.15.4](https://github.com/openai/openai-node/compare/v4.15.3...v4.15.4)
+
+### Documentation
+
+- **readme:** remove redundant whitespace
+  ([#427](https://github.com/openai/openai-node/issues/427))
+  ([aa3a178](https://github.com/openai/openai-node/commit/aa3a1782914a4a285263e4d070bca73e72ed47ec))
+
 ## 4.15.3 (2023-11-04)
 
 Full Changelog:

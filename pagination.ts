@@ -11,7 +11,7 @@ import {
 export interface PageResponse<Item> {
   data: Array<Item>;
 
-  object: string;
+  object: "list";
 }
 
 /**
@@ -21,7 +21,7 @@ export class Page<Item> extends AbstractPage<Item>
   implements PageResponse<Item> {
   data: Array<Item>;
 
-  object: string;
+  object: "list";
 
   constructor(
     client: APIClient,

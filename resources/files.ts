@@ -2,6 +2,7 @@
 
 import * as Core from "../core.ts";
 import { APIResource } from "../resource.ts";
+import { isRequestOptions } from "../core.ts";
 import { sleep } from "../core.ts";
 import { APIConnectionTimeoutError } from "../error.ts";
 import * as FilesAPI from "./files.ts";
@@ -10,10 +11,16 @@ import { Page } from "../pagination.ts";
 
 export class Files extends APIResource {
   /**
-   * Upload a file that can be used across various endpoints/features. Currently, the
-   * size of all the files uploaded by one organization can be up to 1 GB. Please
-   * [contact us](https://help.openai.com/) if you need to increase the storage
-   * limit.
+   * Upload a file that can be used across various endpoints/features. The size of
+   * all the files uploaded by one organization can be up to 100 GB.
+   *
+   * The size of individual files for can be a maximum of 512MB. See the
+   * [Assistants Tools guide](https://platform.openai.com/docs/assistants/tools) to
+   * learn more about the types of files supported. The Fine-tuning API only supports
+   * `.jsonl` files.
+   *
+   * Please [contact us](https://help.openai.com/) if you need to increase these
+   * storage limits.
    */
   create(
     body: FileCreateParams,
@@ -39,9 +46,20 @@ export class Files extends APIResource {
    * Returns a list of files that belong to the user's organization.
    */
   list(
+    query?: FileListParams,
+    options?: Core.RequestOptions,
+  ): Core.PagePromise<FileObjectsPage, FileObject>;
+  list(
+    options?: Core.RequestOptions,
+  ): Core.PagePromise<FileObjectsPage, FileObject>;
+  list(
+    query: FileListParams | Core.RequestOptions = {},
     options?: Core.RequestOptions,
   ): Core.PagePromise<FileObjectsPage, FileObject> {
-    return this.getAPIList("/files", FileObjectsPage, options);
+    if (isRequestOptions(query)) {
+      return this.list({}, query);
+    }
+    return this.getAPIList("/files", FileObjectsPage, { query, ...options });
   }
 
   /**
@@ -110,7 +128,7 @@ export interface FileDeleted {
 
   deleted: boolean;
 
-  object: string;
+  object: "file";
 }
 
 /**
@@ -123,7 +141,7 @@ export interface FileObject {
   id: string;
 
   /**
-   * The size of the file in bytes.
+   * The size of the file, in bytes.
    */
   bytes: number;
 
@@ -138,33 +156,36 @@ export interface FileObject {
   filename: string;
 
   /**
-   * The object type, which is always "file".
+   * The object type, which is always `file`.
    */
-  object: string;
+  object: "file";
 
   /**
-   * The intended purpose of the file. Currently, only "fine-tune" is supported.
+   * The intended purpose of the file. Supported values are `fine-tune`,
+   * `fine-tune-results`, `assistants`, and `assistants_output`.
    */
-  purpose: string;
+  purpose:
+    | "fine-tune"
+    | "fine-tune-results"
+    | "assistants"
+    | "assistants_output";
 
   /**
-   * The current status of the file, which can be either `uploaded`, `processed`,
-   * `pending`, `error`, `deleting` or `deleted`.
+   * Deprecated. The current status of the file, which can be either `uploaded`,
+   * `processed`, or `error`.
    */
-  status?: string;
+  status: "uploaded" | "processed" | "error";
 
   /**
-   * Additional details about the status of the file. If the file is in the `error`
-   * state, this will include a message describing the error.
+   * Deprecated. For details on why a fine-tuning training file failed validation,
+   * see the `error` field on `fine_tuning.job`.
    */
-  status_details?: string | null;
+  status_details?: string;
 }
 
 export interface FileCreateParams {
   /**
-   * The file object (not file name) to be uploaded.
-   *
-   * If the `purpose` is set to "fine-tune", the file will be used for fine-tuning.
+   * The File object (not file name) to be uploaded.
    */
   file: Uploadable;
 
@@ -172,11 +193,20 @@ export interface FileCreateParams {
    * The intended purpose of the uploaded file.
    *
    * Use "fine-tune" for
-   * [fine-tuning](https://platform.openai.com/docs/api-reference/fine-tuning). This
-   * allows us to validate the format of the uploaded file is correct for
-   * fine-tuning.
+   * [Fine-tuning](https://platform.openai.com/docs/api-reference/fine-tuning) and
+   * "assistants" for
+   * [Assistants](https://platform.openai.com/docs/api-reference/assistants) and
+   * [Messages](https://platform.openai.com/docs/api-reference/messages). This allows
+   * us to validate the format of the uploaded file is correct for fine-tuning.
    */
-  purpose: string;
+  purpose: "fine-tune" | "assistants";
+}
+
+export interface FileListParams {
+  /**
+   * Only return files with the given purpose.
+   */
+  purpose?: string;
 }
 
 export namespace Files {
@@ -185,4 +215,5 @@ export namespace Files {
   export type FileObject = FilesAPI.FileObject;
   export import FileObjectsPage = FilesAPI.FileObjectsPage;
   export type FileCreateParams = FilesAPI.FileCreateParams;
+  export type FileListParams = FilesAPI.FileListParams;
 }

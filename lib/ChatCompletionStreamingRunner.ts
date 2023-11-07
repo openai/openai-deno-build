@@ -1,14 +1,17 @@
-import * as Core from "../core.ts";
 import {
   type ChatCompletionChunk,
   type ChatCompletionCreateParamsStreaming,
   Completions,
 } from "../resources/chat/completions.ts";
-import { type AbstractChatCompletionRunnerEvents } from "./AbstractChatCompletionRunner.ts";
+import {
+  type AbstractChatCompletionRunnerEvents,
+  RunnerOptions,
+} from "./AbstractChatCompletionRunner.ts";
 import { type ReadableStream } from "../_shims/mod.ts";
 import {
   type BaseFunctionsArgs,
   type RunnableFunctions,
+  RunnableTools,
 } from "./RunnableFunction.ts";
 import {
   ChatCompletionSnapshot,
@@ -32,6 +35,17 @@ export type ChatCompletionStreamingFunctionRunnerParams<
     functions: RunnableFunctions<FunctionsArgs>;
   };
 
+export type ChatCompletionStreamingToolRunnerParams<
+  FunctionsArgs extends BaseFunctionsArgs,
+> =
+  & Omit<
+    ChatCompletionCreateParamsStreaming,
+    "tools"
+  >
+  & {
+    tools: RunnableTools<FunctionsArgs>;
+  };
+
 export class ChatCompletionStreamingRunner extends ChatCompletionStream
   implements AsyncIterable<ChatCompletionChunk> {
   static override fromReadableStream(
@@ -45,10 +59,20 @@ export class ChatCompletionStreamingRunner extends ChatCompletionStream
   static runFunctions<T extends (string | object)[]>(
     completions: Completions,
     params: ChatCompletionStreamingFunctionRunnerParams<T>,
-    options?: Core.RequestOptions & { maxChatCompletions?: number },
+    options?: RunnerOptions,
   ): ChatCompletionStreamingRunner {
     const runner = new ChatCompletionStreamingRunner();
     runner._run(() => runner._runFunctions(completions, params, options));
+    return runner;
+  }
+
+  static runTools<T extends (string | object)[]>(
+    completions: Completions,
+    params: ChatCompletionStreamingToolRunnerParams<T>,
+    options?: RunnerOptions,
+  ): ChatCompletionStreamingRunner {
+    const runner = new ChatCompletionStreamingRunner();
+    runner._run(() => runner._runTools(completions, params, options));
     return runner;
   }
 }

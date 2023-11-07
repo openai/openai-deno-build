@@ -1,6 +1,7 @@
 // File generated from our OpenAPI spec by Stainless.
 
 import { APIResource } from "../../resource.ts";
+import * as SpeechAPI from "./speech.ts";
 import * as TranscriptionsAPI from "./transcriptions.ts";
 import * as TranslationsAPI from "./translations.ts";
 
@@ -10,6 +11,7 @@ export class Audio extends APIResource {
   translations: TranslationsAPI.Translations = new TranslationsAPI.Translations(
     this.client,
   );
+  speech: SpeechAPI.Speech = new SpeechAPI.Speech(this.client);
 }
 
 export namespace Audio {
@@ -20,4 +22,6 @@ export namespace Audio {
   export import Translations = TranslationsAPI.Translations;
   export type Translation = TranslationsAPI.Translation;
   export type TranslationCreateParams = TranslationsAPI.TranslationCreateParams;
+  export import Speech = SpeechAPI.Speech;
+  export type SpeechCreateParams = SpeechAPI.SpeechCreateParams;
 }

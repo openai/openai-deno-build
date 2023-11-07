@@ -8,9 +8,11 @@ import {
   ChatCompletionStreamingRunner,
   ParsingFunction,
 } from "../resources/beta/chat/completions.ts";
+import type { ChatCompletionMessageParam } from "../resources/chat/completions.ts";
 
 import { type RequestInfo, type RequestInit } from "../_shims/mod.ts";
 import { Response } from "npm:node-fetch";
+import { isAssistantMessage } from "./chatCompletionUtils.ts";
 
 type Fetch = (
   req: string | RequestInfo,
@@ -204,12 +206,12 @@ function* functionCallDeltas(
 
 class RunnerListener {
   readonly contents: string[] = [];
-  readonly messages: OpenAI.Chat.ChatCompletionMessage[] = [];
+  readonly messages: ChatCompletionMessageParam[] = [];
   readonly chatCompletions: OpenAI.Chat.ChatCompletion[] = [];
   readonly functionCalls: OpenAI.Chat.ChatCompletionMessage.FunctionCall[] = [];
   readonly functionCallResults: string[] = [];
   finalContent: string | null = null;
-  finalMessage: OpenAI.Chat.ChatCompletionMessage | undefined;
+  finalMessage: ChatCompletionMessageParam | undefined;
   finalChatCompletion: OpenAI.Chat.ChatCompletion | undefined;
   finalFunctionCall: OpenAI.Chat.ChatCompletionMessage.FunctionCall | undefined;
   finalFunctionCallResult: string | undefined;
@@ -299,8 +301,8 @@ class RunnerListener {
     if (error) return;
 
     const expectedContents = this.messages
-      .filter((m) => m.role === "assistant")
-      .map((m) => m.content)
+      .filter(isAssistantMessage)
+      .map((m) => m.content as string)
       .filter(Boolean);
     expect(this.contents).toEqual(expectedContents);
     expect(this.finalMessage).toEqual(this.messages[this.messages.length - 1]);
@@ -355,14 +357,14 @@ class RunnerListener {
 class StreamingRunnerListener {
   readonly eventChunks: OpenAI.Chat.ChatCompletionChunk[] = [];
   readonly eventContents: [string, string][] = [];
-  readonly eventMessages: OpenAI.Chat.ChatCompletionMessage[] = [];
+  readonly eventMessages: ChatCompletionMessageParam[] = [];
   readonly eventChatCompletions: OpenAI.Chat.ChatCompletion[] = [];
   readonly eventFunctionCalls:
     OpenAI.Chat.ChatCompletionMessage.FunctionCall[] = [];
   readonly eventFunctionCallResults: string[] = [];
 
   finalContent: string | null = null;
-  finalMessage: OpenAI.Chat.ChatCompletionMessage | undefined;
+  finalMessage: ChatCompletionMessageParam | undefined;
   finalChatCompletion: OpenAI.Chat.ChatCompletion | undefined;
   finalFunctionCall: OpenAI.Chat.ChatCompletionMessage.FunctionCall | undefined;
   finalFunctionCallResult: string | undefined;
@@ -1572,7 +1574,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },
@@ -1651,7 +1653,7 @@ describe("resource completions", () => {
             ],
             created: Math.floor(Date.now() / 1000),
             model: "gpt-3.5-turbo",
-            object: "chat.completion",
+            object: "chat.completion.chunk",
           };
         },
       );
@@ -1737,7 +1739,7 @@ describe("resource completions", () => {
               ],
               created: Math.floor(Date.now() / 1000),
               model: "gpt-3.5-turbo",
-              object: "chat.completion",
+              object: "chat.completion.chunk",
             };
           },
         ),
@@ -1775,7 +1777,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },
@@ -1860,7 +1862,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },
@@ -1899,7 +1901,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },
@@ -1951,7 +1953,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },
@@ -2051,7 +2053,7 @@ describe("resource completions", () => {
               ],
               created: Math.floor(Date.now() / 1000),
               model: "gpt-3.5-turbo",
-              object: "chat.completion",
+              object: "chat.completion.chunk",
             };
           },
         ),
@@ -2124,7 +2126,7 @@ describe("resource completions", () => {
               ],
               created: Math.floor(Date.now() / 1000),
               model: "gpt-3.5-turbo",
-              object: "chat.completion",
+              object: "chat.completion.chunk",
             };
           },
         ),
@@ -2167,7 +2169,7 @@ describe("resource completions", () => {
               ],
               created: Math.floor(Date.now() / 1000),
               model: "gpt-3.5-turbo",
-              object: "chat.completion",
+              object: "chat.completion.chunk",
             };
           },
         ),
@@ -2211,7 +2213,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },
@@ -2303,7 +2305,7 @@ describe("resource completions", () => {
               ],
               created: Math.floor(Date.now() / 1000),
               model: "gpt-3.5-turbo",
-              object: "chat.completion",
+              object: "chat.completion.chunk",
             };
           },
         ),
@@ -2367,7 +2369,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },
@@ -2421,7 +2423,7 @@ describe("resource completions", () => {
                 choices: [choice],
                 created: Math.floor(Date.now() / 1000),
                 model: "gpt-3.5-turbo",
-                object: "chat.completion",
+                object: "chat.completion.chunk",
               };
             }
           },

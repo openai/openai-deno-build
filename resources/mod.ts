@@ -23,6 +23,7 @@ export {
   type FileContent,
   type FileCreateParams,
   type FileDeleted,
+  type FileListParams,
   type FileObject,
   FileObjectsPage,
   Files,

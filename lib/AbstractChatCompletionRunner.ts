@@ -2,9 +2,11 @@ import * as Core from "../core.ts";
 import { type CompletionUsage } from "../resources/completions.ts";
 import {
   type ChatCompletion,
+  type ChatCompletionAssistantMessageParam,
   type ChatCompletionCreateParams,
   type ChatCompletionMessage,
   type ChatCompletionMessageParam,
+  type ChatCompletionTool,
   type Completions,
 } from "../resources/chat/completions.ts";
 import { APIUserAbortError, OpenAIError } from "../error.ts";
@@ -13,8 +15,25 @@ import {
   isRunnableFunctionWithParse,
   type RunnableFunction,
 } from "./RunnableFunction.ts";
-import { ChatCompletionFunctionRunnerParams } from "./ChatCompletionRunner.ts";
-import { ChatCompletionStreamingFunctionRunnerParams } from "./ChatCompletionStreamingRunner.ts";
+import {
+  ChatCompletionFunctionRunnerParams,
+  ChatCompletionToolRunnerParams,
+} from "./ChatCompletionRunner.ts";
+import {
+  ChatCompletionStreamingFunctionRunnerParams,
+  ChatCompletionStreamingToolRunnerParams,
+} from "./ChatCompletionStreamingRunner.ts";
+import {
+  isAssistantMessage,
+  isFunctionMessage,
+  isToolMessage,
+} from "./chatCompletionUtils.ts";
+
+const DEFAULT_MAX_CHAT_COMPLETIONS = 10;
+export interface RunnerOptions extends Core.RequestOptions {
+  /** How many requests to make before canceling. Default 10. */
+  maxChatCompletions?: number;
+}
 
 export abstract class AbstractChatCompletionRunner<
   Events extends CustomEvents<any> = AbstractChatCompletionRunnerEvents,
@@ -33,7 +52,7 @@ export abstract class AbstractChatCompletionRunner<
     {};
 
   protected _chatCompletions: ChatCompletion[] = [];
-  messages: (ChatCompletionMessage | ChatCompletionMessageParam)[] = [];
+  messages: ChatCompletionMessageParam[] = [];
 
   #ended = false;
   #errored = false;
@@ -74,21 +93,28 @@ export abstract class AbstractChatCompletionRunner<
     this._chatCompletions.push(chatCompletion);
     this._emit("chatCompletion", chatCompletion);
     const message = chatCompletion.choices[0]?.message;
-    if (message) this._addMessage(message);
+    if (message) this._addMessage(message as ChatCompletionMessageParam);
     return chatCompletion;
   }
 
-  protected _addMessage(
-    message: ChatCompletionMessage | ChatCompletionMessageParam,
-    emit = true,
-  ) {
+  protected _addMessage(message: ChatCompletionMessageParam, emit = true) {
     this.messages.push(message);
     if (emit) {
       this._emit("message", message);
-      if (message.role === "function" && message.content) {
-        this._emit("functionCallResult", message.content);
-      } else if (message.function_call) {
+      if (
+        (isFunctionMessage(message) || isToolMessage(message)) &&
+        message.content
+      ) {
+        // Note, this assumes that {role: 'tool', content: …} is always the result of a call of tool of type=function.
+        this._emit("functionCallResult", message.content as string);
+      } else if (isAssistantMessage(message) && message.function_call) {
         this._emit("functionCall", message.function_call);
+      } else if (isAssistantMessage(message) && message.tool_calls) {
+        for (const tool_call of message.tool_calls) {
+          if (tool_call.type === "function") {
+            this._emit("functionCall", tool_call.function);
+          }
+        }
       }
     }
   }
@@ -209,11 +235,7 @@ export abstract class AbstractChatCompletionRunner<
   }
 
   #getFinalContent(): string | null {
-    for (let i = this.messages.length - 1; i >= 0; i--) {
-      const message = this.messages[i];
-      if (message?.role === "assistant") return message.content;
-    }
-    return null;
+    return this.#getFinalMessage().content;
   }
 
   /**
@@ -225,25 +247,34 @@ export abstract class AbstractChatCompletionRunner<
     return this.#getFinalContent();
   }
 
+  #getFinalMessage(): ChatCompletionAssistantMessageParam {
+    let i = this.messages.length;
+    while (i-- > 0) {
+      const message = this.messages[i];
+      if (isAssistantMessage(message)) {
+        return message;
+      }
+    }
+    throw new OpenAIError(
+      "stream ended without producing a ChatCompletionMessage with role=assistant",
+    );
+  }
+
   /**
-   * @returns a promise that resolves with the the final ChatCompletionMessage, or rejects
-   * if an error occurred or the stream ended prematurely without producing a ChatCompletionMessage.
+   * @returns a promise that resolves with the the final assistant ChatCompletionMessage response,
+   * or rejects if an error occurred or the stream ended prematurely without producing a ChatCompletionMessage.
    */
   async finalMessage(): Promise<ChatCompletionMessage> {
     await this.done();
-    const message = this.messages[this.messages.length - 1];
-    if (!message) {
-      throw new OpenAIError(
-        "stream ended without producing a ChatCompletionMessage",
-      );
-    }
-    return message;
+    return this.#getFinalMessage();
   }
 
   #getFinalFunctionCall(): ChatCompletionMessage.FunctionCall | undefined {
     for (let i = this.messages.length - 1; i >= 0; i--) {
       const message = this.messages[i];
-      if (message?.function_call) return message.function_call;
+      if (isAssistantMessage(message) && message?.function_call) {
+        return message.function_call;
+      }
     }
   }
 
@@ -261,8 +292,8 @@ export abstract class AbstractChatCompletionRunner<
   #getFinalFunctionCallResult(): string | undefined {
     for (let i = this.messages.length - 1; i >= 0; i--) {
       const message = this.messages[i];
-      if (message?.role === "function" && message.content != null) {
-        return message.content;
+      if (isFunctionMessage(message) && message.content != null) {
+        return message.content as string;
       }
     }
   }
@@ -304,12 +335,18 @@ export abstract class AbstractChatCompletionRunner<
     }
     if (error instanceof APIUserAbortError) {
       this.#aborted = true;
-      this._emit("abort", error);
+      return this._emit("abort", error);
     }
-    const openAIError: OpenAIError = error instanceof OpenAIError ? error : (
-      new OpenAIError(error instanceof Error ? error.message : String(error))
-    );
-    this._emit("error", openAIError);
+    if (error instanceof OpenAIError) {
+      return this._emit("error", error);
+    }
+    if (error instanceof Error) {
+      const openAIError: OpenAIError = new OpenAIError(error.message);
+      // @ts-ignore
+      openAIError.cause = error;
+      return this._emit("error", openAIError);
+    }
+    return this._emit("error", new OpenAIError(String(error)));
   };
 
   protected _emit<Event extends keyof Events>(
@@ -329,6 +366,17 @@ export abstract class AbstractChatCompletionRunner<
     if (listeners) {
       this.#listeners[event] = listeners.filter((l) => !l.once) as any;
       listeners.forEach(({ listener }: any) => listener(...args));
+    }
+
+    if (event === "abort") {
+      const error = args[0] as APIUserAbortError;
+      if (!this.#catchingPromiseCreated && !listeners?.length) {
+        Promise.reject(error);
+      }
+      this.#rejectConnectedPromise(error);
+      this.#rejectEndPromise(error);
+      this._emit("end");
+      return;
     }
 
     if (event === "error") {
@@ -371,6 +419,14 @@ export abstract class AbstractChatCompletionRunner<
     }
   }
 
+  #validateParams(params: ChatCompletionCreateParams): void {
+    if (params.n != null && params.n > 1) {
+      throw new OpenAIError(
+        "ChatCompletion convenience helpers only support n=1 at this time. To use n>1, please use chat.completions.create() directly.",
+      );
+    }
+  }
+
   protected async _createChatCompletion(
     completions: Completions,
     params: ChatCompletionCreateParams,
@@ -381,6 +437,8 @@ export abstract class AbstractChatCompletionRunner<
       if (signal.aborted) this.controller.abort();
       signal.addEventListener("abort", () => this.controller.abort());
     }
+    this.#validateParams(params);
+
     const chatCompletion = await completions.create(
       { ...params, stream: false },
       { ...options, signal: this.controller.signal },
@@ -405,11 +463,13 @@ export abstract class AbstractChatCompletionRunner<
     params:
       | ChatCompletionFunctionRunnerParams<FunctionsArgs>
       | ChatCompletionStreamingFunctionRunnerParams<FunctionsArgs>,
-    options?: Core.RequestOptions & { maxChatCompletions?: number },
+    options?: RunnerOptions,
   ) {
+    const role = "function" as const;
     const { function_call = "auto", stream, ...restParams } = params;
-    const isSingleFunctionCall = typeof function_call !== "string" &&
+    const singleFunctionToCall = typeof function_call !== "string" &&
       function_call?.name;
+    const { maxChatCompletions = DEFAULT_MAX_CHAT_COMPLETIONS } = options || {};
 
     const functionsByName: Record<string, RunnableFunction<any>> = {};
     for (const f of params.functions) {
@@ -429,7 +489,7 @@ export abstract class AbstractChatCompletionRunner<
       this._addMessage(message, false);
     }
 
-    for (let i = 0; i < (options?.maxChatCompletions ?? 5); ++i) {
+    for (let i = 0; i < maxChatCompletions; ++i) {
       const chatCompletion: ChatCompletion = await this._createChatCompletion(
         completions,
         {
@@ -447,45 +507,166 @@ export abstract class AbstractChatCompletionRunner<
       if (!message.function_call) return;
       const { name, arguments: args } = message.function_call;
       const fn = functionsByName[name];
-      if (
-        !fn ||
-        (typeof function_call !== "string" && name !== function_call?.name)
-      ) {
-        this._addMessage({
-          role: "function",
-          name,
-          content: `Invalid function_call: ${
-            JSON.stringify(name)
-          }. Available options are: ${
-            functions
-              .map((f) => JSON.stringify(f.name))
-              .join(", ")
-          }. Please try again`,
-        });
-        if (isSingleFunctionCall) return;
+      if (!fn) {
+        const content = `Invalid function_call: ${
+          JSON.stringify(name)
+        }. Available options are: ${
+          functions
+            .map((f) => JSON.stringify(f.name))
+            .join(", ")
+        }. Please try again`;
+
+        this._addMessage({ role, name, content });
+        continue;
+      } else if (singleFunctionToCall && singleFunctionToCall !== name) {
+        const content = `Invalid function_call: ${JSON.stringify(name)}. ${
+          JSON.stringify(
+            singleFunctionToCall,
+          )
+        } requested. Please try again`;
+
+        this._addMessage({ role, name, content });
         continue;
       }
+
       let parsed;
       try {
         parsed = isRunnableFunctionWithParse(fn) ? await fn.parse(args) : args;
       } catch (error) {
         this._addMessage({
-          role: "function",
+          role,
           name,
           content: error instanceof Error ? error.message : String(error),
         });
         continue;
       }
-      const rawContent = await (fn.function as any)(parsed as any, this);
-      const content = typeof rawContent === "string"
+
+      // @ts-expect-error it can't rule out `never` type.
+      const rawContent = await fn.function(parsed, this);
+      const content = this.#stringifyFunctionCallResult(rawContent);
+
+      this._addMessage({ role, name, content });
+
+      if (singleFunctionToCall) return;
+    }
+  }
+
+  protected async _runTools<FunctionsArgs extends BaseFunctionsArgs>(
+    completions: Completions,
+    params:
+      | ChatCompletionToolRunnerParams<FunctionsArgs>
+      | ChatCompletionStreamingToolRunnerParams<FunctionsArgs>,
+    options?: RunnerOptions,
+  ) {
+    const role = "tool" as const;
+    const { tool_choice = "auto", stream, ...restParams } = params;
+    const singleFunctionToCall = typeof tool_choice !== "string" &&
+      tool_choice?.function?.name;
+    const { maxChatCompletions = DEFAULT_MAX_CHAT_COMPLETIONS } = options || {};
+
+    const functionsByName: Record<string, RunnableFunction<any>> = {};
+    for (const f of params.tools) {
+      if (f.type === "function") {
+        functionsByName[f.function.name || f.function.function.name] =
+          f.function;
+      }
+    }
+
+    const tools: ChatCompletionTool[] = "tools" in params
+      ? params.tools.map((t) =>
+        t.type === "function"
+          ? {
+            type: "function",
+            function: {
+              name: t.function.name || t.function.function.name,
+              parameters: t.function.parameters as Record<string, unknown>,
+              description: t.function.description,
+            },
+          }
+          : (t as unknown as ChatCompletionTool)
+      )
+      : (undefined as any);
+
+    for (const message of params.messages) {
+      this._addMessage(message, false);
+    }
+
+    for (let i = 0; i < maxChatCompletions; ++i) {
+      const chatCompletion: ChatCompletion = await this._createChatCompletion(
+        completions,
+        {
+          ...restParams,
+          tool_choice,
+          tools,
+          messages: [...this.messages],
+        },
+        options,
+      );
+      const message = chatCompletion.choices[0]?.message;
+      if (!message) {
+        throw new OpenAIError(`missing message in ChatCompletion response`);
+      }
+      if (!message.tool_calls) return;
+
+      for (const tool_call of message.tool_calls) {
+        if (tool_call.type !== "function") continue;
+        const tool_call_id = tool_call.id;
+        const { name, arguments: args } = tool_call.function;
+        const fn = functionsByName[name];
+
+        if (!fn) {
+          const content = `Invalid tool_call: ${
+            JSON.stringify(name)
+          }. Available options are: ${
+            tools
+              .map((f) => JSON.stringify(f.function.name))
+              .join(", ")
+          }. Please try again`;
+
+          this._addMessage({ role, tool_call_id, content });
+          continue;
+        } else if (singleFunctionToCall && singleFunctionToCall !== name) {
+          const content = `Invalid tool_call: ${JSON.stringify(name)}. ${
+            JSON.stringify(
+              singleFunctionToCall,
+            )
+          } requested. Please try again`;
+
+          this._addMessage({ role, tool_call_id, content });
+          continue;
+        }
+
+        let parsed;
+        try {
+          parsed = isRunnableFunctionWithParse(fn)
+            ? await fn.parse(args)
+            : args;
+        } catch (error) {
+          const content = error instanceof Error
+            ? error.message
+            : String(error);
+          this._addMessage({ role, tool_call_id, content });
+          continue;
+        }
+
+        // @ts-expect-error it can't rule out `never` type.
+        const rawContent = await fn.function(parsed, this);
+        const content = this.#stringifyFunctionCallResult(rawContent);
+        this._addMessage({ role, tool_call_id, content });
+
+        if (singleFunctionToCall) return;
+      }
+    }
+  }
+
+  #stringifyFunctionCallResult(rawContent: unknown): string {
+    return (
+      typeof rawContent === "string"
         ? rawContent
         : rawContent === undefined
         ? "undefined"
-        : JSON.stringify(rawContent);
-      this._addMessage({ role: "function", name, content });
-
-      if (isSingleFunctionCall) return;
-    }
+        : JSON.stringify(rawContent)
+    );
   }
 }
 
@@ -519,14 +700,10 @@ type EventParameters<
 export interface AbstractChatCompletionRunnerEvents {
   connect: () => void;
   functionCall: (functionCall: ChatCompletionMessage.FunctionCall) => void;
-  message: (
-    message: ChatCompletionMessage | ChatCompletionMessageParam,
-  ) => void;
+  message: (message: ChatCompletionMessageParam) => void;
   chatCompletion: (completion: ChatCompletion) => void;
   finalContent: (contentSnapshot: string) => void;
-  finalMessage: (
-    message: ChatCompletionMessage | ChatCompletionMessageParam,
-  ) => void;
+  finalMessage: (message: ChatCompletionMessageParam) => void;
   finalChatCompletion: (completion: ChatCompletion) => void;
   finalFunctionCall: (functionCall: ChatCompletionMessage.FunctionCall) => void;
   functionCallResult: (content: string) => void;

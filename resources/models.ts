@@ -59,7 +59,7 @@ export interface Model {
   /**
    * The object type, which is always "model".
    */
-  object: string;
+  object: "model";
 
   /**
    * The organization that owns the model.

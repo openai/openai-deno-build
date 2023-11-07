@@ -230,10 +230,31 @@ export namespace OpenAI {
 
   export import Chat = API.Chat;
   export type ChatCompletion = API.ChatCompletion;
+  export type ChatCompletionAssistantMessageParam =
+    API.ChatCompletionAssistantMessageParam;
   export type ChatCompletionChunk = API.ChatCompletionChunk;
+  export type ChatCompletionContentPart = API.ChatCompletionContentPart;
+  export type ChatCompletionContentPartImage =
+    API.ChatCompletionContentPartImage;
+  export type ChatCompletionContentPartText = API.ChatCompletionContentPartText;
+  export type ChatCompletionFunctionCallOption =
+    API.ChatCompletionFunctionCallOption;
+  export type ChatCompletionFunctionMessageParam =
+    API.ChatCompletionFunctionMessageParam;
   export type ChatCompletionMessage = API.ChatCompletionMessage;
   export type ChatCompletionMessageParam = API.ChatCompletionMessageParam;
+  export type ChatCompletionMessageToolCall = API.ChatCompletionMessageToolCall;
+  export type ChatCompletionNamedToolChoice = API.ChatCompletionNamedToolChoice;
   export type ChatCompletionRole = API.ChatCompletionRole;
+  export type ChatCompletionSystemMessageParam =
+    API.ChatCompletionSystemMessageParam;
+  export type ChatCompletionTool = API.ChatCompletionTool;
+  export type ChatCompletionToolChoiceOption =
+    API.ChatCompletionToolChoiceOption;
+  export type ChatCompletionToolMessageParam =
+    API.ChatCompletionToolMessageParam;
+  export type ChatCompletionUserMessageParam =
+    API.ChatCompletionUserMessageParam;
   export type ChatCompletionCreateParams = API.ChatCompletionCreateParams;
   export type ChatCompletionCreateParamsNonStreaming =
     API.ChatCompletionCreateParamsNonStreaming;
@@ -255,6 +276,7 @@ export namespace OpenAI {
   export type FileObject = API.FileObject;
   export import FileObjectsPage = API.FileObjectsPage;
   export type FileCreateParams = API.FileCreateParams;
+  export type FileListParams = API.FileListParams;
 
   export import Images = API.Images;
   export type Image = API.Image;
