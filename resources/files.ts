@@ -3,6 +3,7 @@
 import * as Core from "../core.ts";
 import { APIResource } from "../resource.ts";
 import { isRequestOptions } from "../core.ts";
+import { type Response } from "../_shims/mod.ts";
 import { sleep } from "../core.ts";
 import { APIConnectionTimeoutError } from "../error.ts";
 import * as FilesAPI from "./files.ts";
@@ -26,7 +27,7 @@ export class Files extends APIResource {
     body: FileCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FileObject> {
-    return this.post(
+    return this._client.post(
       "/files",
       multipartFormRequestOptions({ body, ...options }),
     );
@@ -39,7 +40,7 @@ export class Files extends APIResource {
     fileId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FileObject> {
-    return this.get(`/files/${fileId}`, options);
+    return this._client.get(`/files/${fileId}`, options);
   }
 
   /**
@@ -59,7 +60,10 @@ export class Files extends APIResource {
     if (isRequestOptions(query)) {
       return this.list({}, query);
     }
-    return this.getAPIList("/files", FileObjectsPage, { query, ...options });
+    return this._client.getAPIList("/files", FileObjectsPage, {
+      query,
+      ...options,
+    });
   }
 
   /**
@@ -69,17 +73,32 @@ export class Files extends APIResource {
     fileId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FileDeleted> {
-    return this.delete(`/files/${fileId}`, options);
+    return this._client.delete(`/files/${fileId}`, options);
   }
 
   /**
    * Returns the contents of the specified file.
    */
+  content(
+    fileId: string,
+    options?: Core.RequestOptions,
+  ): Core.APIPromise<Response> {
+    return this._client.get(`/files/${fileId}/content`, {
+      ...options,
+      __binaryResponse: true,
+    });
+  }
+
+  /**
+   * Returns the contents of the specified file.
+   *
+   * @deprecated The `.content()` method should be used instead
+   */
   retrieveContent(
     fileId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<string> {
-    return this.get(`/files/${fileId}/content`, {
+    return this._client.get(`/files/${fileId}/content`, {
       ...options,
       headers: { Accept: "application/json", ...options?.headers },
     });

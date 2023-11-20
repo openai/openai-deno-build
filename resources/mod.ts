@@ -1,6 +1,7 @@
 // File generated from our OpenAPI spec by Stainless.
 
 export * from "./chat/mod.ts";
+export * from "./shared.ts";
 export { Audio } from "./audio/audio.ts";
 export { Beta } from "./beta/beta.ts";
 export {

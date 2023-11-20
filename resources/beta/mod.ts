@@ -3,11 +3,11 @@
 export {
   type Assistant,
   type AssistantCreateParams,
+  type AssistantDeleted,
   type AssistantListParams,
   Assistants,
   AssistantsPage,
   type AssistantUpdateParams,
-  type AsssitantDeleted,
 } from "./assistants/mod.ts";
 export { Beta } from "./beta.ts";
 export { Chat } from "./chat/mod.ts";

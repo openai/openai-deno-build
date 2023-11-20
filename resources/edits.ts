@@ -17,7 +17,7 @@ export class Edits extends APIResource {
     body: EditCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Edit> {
-    return this.post("/edits", { body, ...options });
+    return this._client.post("/edits", { body, ...options });
   }
 }
 

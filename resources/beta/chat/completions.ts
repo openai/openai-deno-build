@@ -65,13 +65,13 @@ export class Completions extends APIResource {
   ): ChatCompletionRunner | ChatCompletionStreamingRunner {
     if (body.stream) {
       return ChatCompletionStreamingRunner.runFunctions(
-        this.client.chat.completions,
+        this._client.chat.completions,
         body as ChatCompletionStreamingFunctionRunnerParams<FunctionsArgs>,
         options,
       );
     }
     return ChatCompletionRunner.runFunctions(
-      this.client.chat.completions,
+      this._client.chat.completions,
       body as ChatCompletionFunctionRunnerParams<FunctionsArgs>,
       options,
     );
@@ -102,13 +102,13 @@ export class Completions extends APIResource {
   ): ChatCompletionRunner | ChatCompletionStreamingRunner {
     if (body.stream) {
       return ChatCompletionStreamingRunner.runTools(
-        this.client.chat.completions,
+        this._client.chat.completions,
         body as ChatCompletionStreamingToolRunnerParams<FunctionsArgs>,
         options,
       );
     }
     return ChatCompletionRunner.runTools(
-      this.client.chat.completions,
+      this._client.chat.completions,
       body as ChatCompletionToolRunnerParams<FunctionsArgs>,
       options,
     );
@@ -122,7 +122,7 @@ export class Completions extends APIResource {
     options?: Core.RequestOptions,
   ): ChatCompletionStream {
     return ChatCompletionStream.createChatCompletion(
-      this.client.chat.completions,
+      this._client.chat.completions,
       body,
       options,
     );

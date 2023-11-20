@@ -13,7 +13,7 @@ export class Speech extends APIResource {
     body: SpeechCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Response> {
-    return this.post("/audio/speech", {
+    return this._client.post("/audio/speech", {
       body,
       ...options,
       __binaryResponse: true,

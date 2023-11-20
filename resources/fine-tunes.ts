@@ -21,7 +21,7 @@ export class FineTunes extends APIResource {
     body: FineTuneCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FineTune> {
-    return this.post("/fine-tunes", { body, ...options });
+    return this._client.post("/fine-tunes", { body, ...options });
   }
 
   /**
@@ -33,7 +33,7 @@ export class FineTunes extends APIResource {
     fineTuneId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FineTune> {
-    return this.get(`/fine-tunes/${fineTuneId}`, options);
+    return this._client.get(`/fine-tunes/${fineTuneId}`, options);
   }
 
   /**
@@ -42,7 +42,7 @@ export class FineTunes extends APIResource {
   list(
     options?: Core.RequestOptions,
   ): Core.PagePromise<FineTunesPage, FineTune> {
-    return this.getAPIList("/fine-tunes", FineTunesPage, options);
+    return this._client.getAPIList("/fine-tunes", FineTunesPage, options);
   }
 
   /**
@@ -52,7 +52,7 @@ export class FineTunes extends APIResource {
     fineTuneId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FineTune> {
-    return this.post(`/fine-tunes/${fineTuneId}/cancel`, options);
+    return this._client.post(`/fine-tunes/${fineTuneId}/cancel`, options);
   }
 
   /**
@@ -80,7 +80,7 @@ export class FineTunes extends APIResource {
   ):
     | APIPromise<FineTuneEventsListResponse>
     | APIPromise<Stream<FineTuneEvent>> {
-    return this.get(`/fine-tunes/${fineTuneId}/events`, {
+    return this._client.get(`/fine-tunes/${fineTuneId}/events`, {
       query,
       timeout: 86400000,
       ...options,

@@ -6,18 +6,18 @@ import * as ChatAPI from "./chat/chat.ts";
 import * as ThreadsAPI from "./threads/threads.ts";
 
 export class Beta extends APIResource {
-  chat: ChatAPI.Chat = new ChatAPI.Chat(this.client);
+  chat: ChatAPI.Chat = new ChatAPI.Chat(this._client);
   assistants: AssistantsAPI.Assistants = new AssistantsAPI.Assistants(
-    this.client,
+    this._client,
   );
-  threads: ThreadsAPI.Threads = new ThreadsAPI.Threads(this.client);
+  threads: ThreadsAPI.Threads = new ThreadsAPI.Threads(this._client);
 }
 
 export namespace Beta {
   export import Chat = ChatAPI.Chat;
   export import Assistants = AssistantsAPI.Assistants;
   export type Assistant = AssistantsAPI.Assistant;
-  export type AsssitantDeleted = AssistantsAPI.AsssitantDeleted;
+  export type AssistantDeleted = AssistantsAPI.AssistantDeleted;
   export import AssistantsPage = AssistantsAPI.AssistantsPage;
   export type AssistantCreateParams = AssistantsAPI.AssistantCreateParams;
   export type AssistantUpdateParams = AssistantsAPI.AssistantUpdateParams;

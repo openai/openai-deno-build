@@ -16,10 +16,13 @@ export class Steps extends APIResource {
     stepId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<RunStep> {
-    return this.get(`/threads/${threadId}/runs/${runId}/steps/${stepId}`, {
-      ...options,
-      headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
-    });
+    return this._client.get(
+      `/threads/${threadId}/runs/${runId}/steps/${stepId}`,
+      {
+        ...options,
+        headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+      },
+    );
   }
 
   /**
@@ -45,7 +48,7 @@ export class Steps extends APIResource {
     if (isRequestOptions(query)) {
       return this.list(threadId, runId, {}, query);
     }
-    return this.getAPIList(
+    return this._client.getAPIList(
       `/threads/${threadId}/runs/${runId}/steps`,
       RunStepsPage,
       {
@@ -273,9 +276,9 @@ export interface RunStep {
   metadata: unknown | null;
 
   /**
-   * The object type, which is always `assistant.run.step``.
+   * The object type, which is always `thread.run.step``.
    */
-  object: "assistant.run.step";
+  object: "thread.run.step";
 
   /**
    * The ID of the [run](https://platform.openai.com/docs/api-reference/runs) that
@@ -284,8 +287,8 @@ export interface RunStep {
   run_id: string;
 
   /**
-   * The status of the run, which can be either `in_progress`, `cancelled`, `failed`,
-   * `completed`, or `expired`.
+   * The status of the run step, which can be either `in_progress`, `cancelled`,
+   * `failed`, `completed`, or `expired`.
    */
   status: "in_progress" | "cancelled" | "failed" | "completed" | "expired";
 

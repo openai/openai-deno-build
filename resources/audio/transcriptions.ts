@@ -13,7 +13,7 @@ export class Transcriptions extends APIResource {
     body: TranscriptionCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Transcription> {
-    return this.post(
+    return this._client.post(
       "/audio/transcriptions",
       multipartFormRequestOptions({ body, ...options }),
     );

@@ -7,11 +7,11 @@ import * as TranslationsAPI from "./translations.ts";
 
 export class Audio extends APIResource {
   transcriptions: TranscriptionsAPI.Transcriptions = new TranscriptionsAPI
-    .Transcriptions(this.client);
+    .Transcriptions(this._client);
   translations: TranslationsAPI.Translations = new TranslationsAPI.Translations(
-    this.client,
+    this._client,
   );
-  speech: SpeechAPI.Speech = new SpeechAPI.Speech(this.client);
+  speech: SpeechAPI.Speech = new SpeechAPI.Speech(this._client);
 }
 
 export namespace Audio {

@@ -12,7 +12,7 @@ export class Embeddings extends APIResource {
     body: EmbeddingCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<CreateEmbeddingResponse> {
-    return this.post("/embeddings", { body, ...options });
+    return this._client.post("/embeddings", { body, ...options });
   }
 }
 
@@ -28,9 +28,9 @@ export interface CreateEmbeddingResponse {
   model: string;
 
   /**
-   * The object type, which is always "embedding".
+   * The object type, which is always "list".
    */
-  object: "embedding";
+  object: "list";
 
   /**
    * The usage information for the request.

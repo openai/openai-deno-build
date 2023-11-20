@@ -5,7 +5,7 @@ import * as CompletionsAPI from "./completions.ts";
 
 export class Chat extends APIResource {
   completions: CompletionsAPI.Completions = new CompletionsAPI.Completions(
-    this.client,
+    this._client,
   );
 }
 

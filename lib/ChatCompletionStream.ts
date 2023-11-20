@@ -58,7 +58,13 @@ export class ChatCompletionStream
       runner._runChatCompletion(
         completions,
         { ...params, stream: true },
-        options,
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            "X-Stainless-Helper-Method": "stream",
+          },
+        },
       )
     );
     return runner;

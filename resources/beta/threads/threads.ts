@@ -2,22 +2,32 @@
 
 import * as Core from "../../../core.ts";
 import { APIResource } from "../../../resource.ts";
+import { isRequestOptions } from "../../../core.ts";
 import * as ThreadsAPI from "./threads.ts";
+import * as Shared from "../../shared.ts";
 import * as MessagesAPI from "./messages/messages.ts";
 import * as RunsAPI from "./runs/runs.ts";
 
 export class Threads extends APIResource {
-  runs: RunsAPI.Runs = new RunsAPI.Runs(this.client);
-  messages: MessagesAPI.Messages = new MessagesAPI.Messages(this.client);
+  runs: RunsAPI.Runs = new RunsAPI.Runs(this._client);
+  messages: MessagesAPI.Messages = new MessagesAPI.Messages(this._client);
 
   /**
    * Create a thread.
    */
   create(
-    body: ThreadCreateParams,
+    body?: ThreadCreateParams,
+    options?: Core.RequestOptions,
+  ): Core.APIPromise<Thread>;
+  create(options?: Core.RequestOptions): Core.APIPromise<Thread>;
+  create(
+    body: ThreadCreateParams | Core.RequestOptions = {},
     options?: Core.RequestOptions,
   ): Core.APIPromise<Thread> {
-    return this.post("/threads", {
+    if (isRequestOptions(body)) {
+      return this.create({}, body);
+    }
+    return this._client.post("/threads", {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -31,7 +41,7 @@ export class Threads extends APIResource {
     threadId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Thread> {
-    return this.get(`/threads/${threadId}`, {
+    return this._client.get(`/threads/${threadId}`, {
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
     });
@@ -45,7 +55,7 @@ export class Threads extends APIResource {
     body: ThreadUpdateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Thread> {
-    return this.post(`/threads/${threadId}`, {
+    return this._client.post(`/threads/${threadId}`, {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -59,7 +69,7 @@ export class Threads extends APIResource {
     threadId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<ThreadDeleted> {
-    return this.delete(`/threads/${threadId}`, {
+    return this._client.delete(`/threads/${threadId}`, {
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
     });
@@ -72,7 +82,7 @@ export class Threads extends APIResource {
     body: ThreadCreateAndRunParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<RunsAPI.Run> {
-    return this.post("/threads/runs", {
+    return this._client.post("/threads/runs", {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -288,46 +298,12 @@ export namespace ThreadCreateAndRunParams {
   }
 
   export interface AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    function: AssistantToolsFunction.Function;
+    function: Shared.FunctionDefinition;
 
     /**
      * The type of tool being defined: `function`
      */
     type: "function";
-  }
-
-  export namespace AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    export interface Function {
-      /**
-       * A description of what the function does, used by the model to choose when and
-       * how to call the function.
-       */
-      description: string;
-
-      /**
-       * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain
-       * underscores and dashes, with a maximum length of 64.
-       */
-      name: string;
-
-      /**
-       * The parameters the functions accepts, described as a JSON Schema object. See the
-       * [guide](https://platform.openai.com/docs/guides/gpt/function-calling) for
-       * examples, and the
-       * [JSON Schema reference](https://json-schema.org/understanding-json-schema/) for
-       * documentation about the format.
-       *
-       * To describe a function that accepts no parameters, provide the value
-       * `{"type": "object", "properties": {}}`.
-       */
-      parameters: Record<string, unknown>;
-    }
   }
 }
 

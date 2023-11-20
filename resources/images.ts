@@ -13,7 +13,7 @@ export class Images extends APIResource {
     body: ImageCreateVariationParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<ImagesResponse> {
-    return this.post(
+    return this._client.post(
       "/images/variations",
       multipartFormRequestOptions({ body, ...options }),
     );
@@ -26,7 +26,7 @@ export class Images extends APIResource {
     body: ImageEditParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<ImagesResponse> {
-    return this.post(
+    return this._client.post(
       "/images/edits",
       multipartFormRequestOptions({ body, ...options }),
     );
@@ -39,7 +39,7 @@ export class Images extends APIResource {
     body: ImageGenerateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<ImagesResponse> {
-    return this.post("/images/generations", { body, ...options });
+    return this._client.post("/images/generations", { body, ...options });
   }
 }
 

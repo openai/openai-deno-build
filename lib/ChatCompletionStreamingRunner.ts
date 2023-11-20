@@ -62,7 +62,15 @@ export class ChatCompletionStreamingRunner extends ChatCompletionStream
     options?: RunnerOptions,
   ): ChatCompletionStreamingRunner {
     const runner = new ChatCompletionStreamingRunner();
-    runner._run(() => runner._runFunctions(completions, params, options));
+    runner._run(() =>
+      runner._runFunctions(completions, params, {
+        ...options,
+        headers: {
+          ...options?.headers,
+          "X-Stainless-Helper-Method": "runFunctions",
+        },
+      })
+    );
     return runner;
   }
 
@@ -72,7 +80,15 @@ export class ChatCompletionStreamingRunner extends ChatCompletionStream
     options?: RunnerOptions,
   ): ChatCompletionStreamingRunner {
     const runner = new ChatCompletionStreamingRunner();
-    runner._run(() => runner._runTools(completions, params, options));
+    runner._run(() =>
+      runner._runTools(completions, params, {
+        ...options,
+        headers: {
+          ...options?.headers,
+          "X-Stainless-Helper-Method": "runTools",
+        },
+      })
+    );
     return runner;
   }
 }

@@ -4,11 +4,12 @@ import * as Core from "../../../../core.ts";
 import { APIResource } from "../../../../resource.ts";
 import { isRequestOptions } from "../../../../core.ts";
 import * as RunsAPI from "./runs.ts";
+import * as Shared from "../../../shared.ts";
 import * as StepsAPI from "./steps.ts";
 import { CursorPage, type CursorPageParams } from "../../../../pagination.ts";
 
 export class Runs extends APIResource {
-  steps: StepsAPI.Steps = new StepsAPI.Steps(this.client);
+  steps: StepsAPI.Steps = new StepsAPI.Steps(this._client);
 
   /**
    * Create a run.
@@ -18,7 +19,7 @@ export class Runs extends APIResource {
     body: RunCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Run> {
-    return this.post(`/threads/${threadId}/runs`, {
+    return this._client.post(`/threads/${threadId}/runs`, {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -33,7 +34,7 @@ export class Runs extends APIResource {
     runId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Run> {
-    return this.get(`/threads/${threadId}/runs/${runId}`, {
+    return this._client.get(`/threads/${threadId}/runs/${runId}`, {
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
     });
@@ -48,7 +49,7 @@ export class Runs extends APIResource {
     body: RunUpdateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Run> {
-    return this.post(`/threads/${threadId}/runs/${runId}`, {
+    return this._client.post(`/threads/${threadId}/runs/${runId}`, {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -75,7 +76,7 @@ export class Runs extends APIResource {
     if (isRequestOptions(query)) {
       return this.list(threadId, {}, query);
     }
-    return this.getAPIList(`/threads/${threadId}/runs`, RunsPage, {
+    return this._client.getAPIList(`/threads/${threadId}/runs`, RunsPage, {
       query,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -90,7 +91,7 @@ export class Runs extends APIResource {
     runId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Run> {
-    return this.post(`/threads/${threadId}/runs/${runId}/cancel`, {
+    return this._client.post(`/threads/${threadId}/runs/${runId}/cancel`, {
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
     });
@@ -108,11 +109,14 @@ export class Runs extends APIResource {
     body: RunSubmitToolOutputsParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Run> {
-    return this.post(`/threads/${threadId}/runs/${runId}/submit_tool_outputs`, {
-      body,
-      ...options,
-      headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
-    });
+    return this._client.post(
+      `/threads/${threadId}/runs/${runId}/submit_tool_outputs`,
+      {
+        body,
+        ...options,
+        headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+      },
+    );
   }
 }
 
@@ -236,9 +240,9 @@ export interface Run {
   model: string;
 
   /**
-   * The object type, which is always `assistant.run`.
+   * The object type, which is always `thread.run`.
    */
-  object: "assistant.run";
+  object: "thread.run";
 
   /**
    * Details on the action required to continue the run. Will be `null` if no action
@@ -343,46 +347,12 @@ export namespace Run {
   }
 
   export interface AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    function: AssistantToolsFunction.Function;
+    function: Shared.FunctionDefinition;
 
     /**
      * The type of tool being defined: `function`
      */
     type: "function";
-  }
-
-  export namespace AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    export interface Function {
-      /**
-       * A description of what the function does, used by the model to choose when and
-       * how to call the function.
-       */
-      description: string;
-
-      /**
-       * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain
-       * underscores and dashes, with a maximum length of 64.
-       */
-      name: string;
-
-      /**
-       * The parameters the functions accepts, described as a JSON Schema object. See the
-       * [guide](https://platform.openai.com/docs/guides/gpt/function-calling) for
-       * examples, and the
-       * [JSON Schema reference](https://json-schema.org/understanding-json-schema/) for
-       * documentation about the format.
-       *
-       * To describe a function that accepts no parameters, provide the value
-       * `{"type": "object", "properties": {}}`.
-       */
-      parameters: Record<string, unknown>;
-    }
   }
 }
 
@@ -445,46 +415,12 @@ export namespace RunCreateParams {
   }
 
   export interface AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    function: AssistantToolsFunction.Function;
+    function: Shared.FunctionDefinition;
 
     /**
      * The type of tool being defined: `function`
      */
     type: "function";
-  }
-
-  export namespace AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    export interface Function {
-      /**
-       * A description of what the function does, used by the model to choose when and
-       * how to call the function.
-       */
-      description: string;
-
-      /**
-       * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain
-       * underscores and dashes, with a maximum length of 64.
-       */
-      name: string;
-
-      /**
-       * The parameters the functions accepts, described as a JSON Schema object. See the
-       * [guide](https://platform.openai.com/docs/guides/gpt/function-calling) for
-       * examples, and the
-       * [JSON Schema reference](https://json-schema.org/understanding-json-schema/) for
-       * documentation about the format.
-       *
-       * To describe a function that accepts no parameters, provide the value
-       * `{"type": "object", "properties": {}}`.
-       */
-      parameters: Record<string, unknown>;
-    }
   }
 }
 

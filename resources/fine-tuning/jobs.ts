@@ -19,7 +19,7 @@ export class Jobs extends APIResource {
     body: JobCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FineTuningJob> {
-    return this.post("/fine_tuning/jobs", { body, ...options });
+    return this._client.post("/fine_tuning/jobs", { body, ...options });
   }
 
   /**
@@ -31,7 +31,7 @@ export class Jobs extends APIResource {
     fineTuningJobId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FineTuningJob> {
-    return this.get(`/fine_tuning/jobs/${fineTuningJobId}`, options);
+    return this._client.get(`/fine_tuning/jobs/${fineTuningJobId}`, options);
   }
 
   /**
@@ -51,7 +51,7 @@ export class Jobs extends APIResource {
     if (isRequestOptions(query)) {
       return this.list({}, query);
     }
-    return this.getAPIList("/fine_tuning/jobs", FineTuningJobsPage, {
+    return this._client.getAPIList("/fine_tuning/jobs", FineTuningJobsPage, {
       query,
       ...options,
     });
@@ -64,7 +64,10 @@ export class Jobs extends APIResource {
     fineTuningJobId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<FineTuningJob> {
-    return this.post(`/fine_tuning/jobs/${fineTuningJobId}/cancel`, options);
+    return this._client.post(
+      `/fine_tuning/jobs/${fineTuningJobId}/cancel`,
+      options,
+    );
   }
 
   /**
@@ -87,7 +90,7 @@ export class Jobs extends APIResource {
     if (isRequestOptions(query)) {
       return this.listEvents(fineTuningJobId, {}, query);
     }
-    return this.getAPIList(
+    return this._client.getAPIList(
       `/fine_tuning/jobs/${fineTuningJobId}/events`,
       FineTuningJobEventsPage,
       {

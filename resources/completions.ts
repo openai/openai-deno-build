@@ -26,7 +26,7 @@ export class Completions extends APIResource {
     body: CompletionCreateParams,
     options?: Core.RequestOptions,
   ): APIPromise<Completion> | APIPromise<Stream<Completion>> {
-    return this.post("/completions", {
+    return this._client.post("/completions", {
       body,
       ...options,
       stream: body.stream ?? false,

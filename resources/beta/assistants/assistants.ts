@@ -4,11 +4,12 @@ import * as Core from "../../../core.ts";
 import { APIResource } from "../../../resource.ts";
 import { isRequestOptions } from "../../../core.ts";
 import * as AssistantsAPI from "./assistants.ts";
+import * as Shared from "../../shared.ts";
 import * as FilesAPI from "./files.ts";
 import { CursorPage, type CursorPageParams } from "../../../pagination.ts";
 
 export class Assistants extends APIResource {
-  files: FilesAPI.Files = new FilesAPI.Files(this.client);
+  files: FilesAPI.Files = new FilesAPI.Files(this._client);
 
   /**
    * Create an assistant with a model and instructions.
@@ -17,7 +18,7 @@ export class Assistants extends APIResource {
     body: AssistantCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Assistant> {
-    return this.post("/assistants", {
+    return this._client.post("/assistants", {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -31,7 +32,7 @@ export class Assistants extends APIResource {
     assistantId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Assistant> {
-    return this.get(`/assistants/${assistantId}`, {
+    return this._client.get(`/assistants/${assistantId}`, {
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
     });
@@ -45,7 +46,7 @@ export class Assistants extends APIResource {
     body: AssistantUpdateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Assistant> {
-    return this.post(`/assistants/${assistantId}`, {
+    return this._client.post(`/assistants/${assistantId}`, {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -69,7 +70,7 @@ export class Assistants extends APIResource {
     if (isRequestOptions(query)) {
       return this.list({}, query);
     }
-    return this.getAPIList("/assistants", AssistantsPage, {
+    return this._client.getAPIList("/assistants", AssistantsPage, {
       query,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
@@ -82,8 +83,8 @@ export class Assistants extends APIResource {
   del(
     assistantId: string,
     options?: Core.RequestOptions,
-  ): Core.APIPromise<AsssitantDeleted> {
-    return this.delete(`/assistants/${assistantId}`, {
+  ): Core.APIPromise<AssistantDeleted> {
+    return this._client.delete(`/assistants/${assistantId}`, {
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
     });
@@ -176,50 +177,16 @@ export namespace Assistant {
   }
 
   export interface Function {
-    /**
-     * The function definition.
-     */
-    function: Function.Function;
+    function: Shared.FunctionDefinition;
 
     /**
      * The type of tool being defined: `function`
      */
     type: "function";
   }
-
-  export namespace Function {
-    /**
-     * The function definition.
-     */
-    export interface Function {
-      /**
-       * A description of what the function does, used by the model to choose when and
-       * how to call the function.
-       */
-      description: string;
-
-      /**
-       * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain
-       * underscores and dashes, with a maximum length of 64.
-       */
-      name: string;
-
-      /**
-       * The parameters the functions accepts, described as a JSON Schema object. See the
-       * [guide](https://platform.openai.com/docs/guides/gpt/function-calling) for
-       * examples, and the
-       * [JSON Schema reference](https://json-schema.org/understanding-json-schema/) for
-       * documentation about the format.
-       *
-       * To describe a function that accepts no parameters, provide the value
-       * `{"type": "object", "properties": {}}`.
-       */
-      parameters: Record<string, unknown>;
-    }
-  }
 }
 
-export interface AsssitantDeleted {
+export interface AssistantDeleted {
   id: string;
 
   deleted: boolean;
@@ -295,46 +262,12 @@ export namespace AssistantCreateParams {
   }
 
   export interface AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    function: AssistantToolsFunction.Function;
+    function: Shared.FunctionDefinition;
 
     /**
      * The type of tool being defined: `function`
      */
     type: "function";
-  }
-
-  export namespace AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    export interface Function {
-      /**
-       * A description of what the function does, used by the model to choose when and
-       * how to call the function.
-       */
-      description: string;
-
-      /**
-       * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain
-       * underscores and dashes, with a maximum length of 64.
-       */
-      name: string;
-
-      /**
-       * The parameters the functions accepts, described as a JSON Schema object. See the
-       * [guide](https://platform.openai.com/docs/guides/gpt/function-calling) for
-       * examples, and the
-       * [JSON Schema reference](https://json-schema.org/understanding-json-schema/) for
-       * documentation about the format.
-       *
-       * To describe a function that accepts no parameters, provide the value
-       * `{"type": "object", "properties": {}}`.
-       */
-      parameters: Record<string, unknown>;
-    }
   }
 }
 
@@ -408,46 +341,12 @@ export namespace AssistantUpdateParams {
   }
 
   export interface AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    function: AssistantToolsFunction.Function;
+    function: Shared.FunctionDefinition;
 
     /**
      * The type of tool being defined: `function`
      */
     type: "function";
-  }
-
-  export namespace AssistantToolsFunction {
-    /**
-     * The function definition.
-     */
-    export interface Function {
-      /**
-       * A description of what the function does, used by the model to choose when and
-       * how to call the function.
-       */
-      description: string;
-
-      /**
-       * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain
-       * underscores and dashes, with a maximum length of 64.
-       */
-      name: string;
-
-      /**
-       * The parameters the functions accepts, described as a JSON Schema object. See the
-       * [guide](https://platform.openai.com/docs/guides/gpt/function-calling) for
-       * examples, and the
-       * [JSON Schema reference](https://json-schema.org/understanding-json-schema/) for
-       * documentation about the format.
-       *
-       * To describe a function that accepts no parameters, provide the value
-       * `{"type": "object", "properties": {}}`.
-       */
-      parameters: Record<string, unknown>;
-    }
   }
 }
 
@@ -469,7 +368,7 @@ export interface AssistantListParams extends CursorPageParams {
 
 export namespace Assistants {
   export type Assistant = AssistantsAPI.Assistant;
-  export type AsssitantDeleted = AssistantsAPI.AsssitantDeleted;
+  export type AssistantDeleted = AssistantsAPI.AssistantDeleted;
   export import AssistantsPage = AssistantsAPI.AssistantsPage;
   export type AssistantCreateParams = AssistantsAPI.AssistantCreateParams;
   export type AssistantUpdateParams = AssistantsAPI.AssistantUpdateParams;

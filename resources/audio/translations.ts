@@ -13,7 +13,7 @@ export class Translations extends APIResource {
     body: TranslationCreateParams,
     options?: Core.RequestOptions,
   ): Core.APIPromise<Translation> {
-    return this.post(
+    return this._client.post(
       "/audio/translations",
       multipartFormRequestOptions({ body, ...options }),
     );

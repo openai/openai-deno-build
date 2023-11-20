@@ -16,7 +16,7 @@ export class Files extends APIResource {
     fileId: string,
     options?: Core.RequestOptions,
   ): Core.APIPromise<MessageFile> {
-    return this.get(
+    return this._client.get(
       `/threads/${threadId}/messages/${messageId}/files/${fileId}`,
       {
         ...options,
@@ -48,7 +48,7 @@ export class Files extends APIResource {
     if (isRequestOptions(query)) {
       return this.list(threadId, messageId, {}, query);
     }
-    return this.getAPIList(
+    return this._client.getAPIList(
       `/threads/${threadId}/messages/${messageId}/files`,
       MessageFilesPage,
       {

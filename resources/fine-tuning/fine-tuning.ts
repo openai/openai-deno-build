@@ -4,7 +4,7 @@ import { APIResource } from "../../resource.ts";
 import * as JobsAPI from "./jobs.ts";
 
 export class FineTuning extends APIResource {
-  jobs: JobsAPI.Jobs = new JobsAPI.Jobs(this.client);
+  jobs: JobsAPI.Jobs = new JobsAPI.Jobs(this._client);
 }
 
 export namespace FineTuning {

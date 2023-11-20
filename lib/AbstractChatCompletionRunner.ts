@@ -276,6 +276,8 @@ export abstract class AbstractChatCompletionRunner<
         return message.function_call;
       }
     }
+
+    return;
   }
 
   /**
@@ -296,6 +298,8 @@ export abstract class AbstractChatCompletionRunner<
         return message.content as string;
       }
     }
+
+    return;
   }
 
   async finalFunctionCallResult(): Promise<string | undefined> {
