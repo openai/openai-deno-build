@@ -98,7 +98,11 @@ export abstract class AbstractChatCompletionRunner<
   }
 
   protected _addMessage(message: ChatCompletionMessageParam, emit = true) {
+    // @ts-expect-error this works around a bug in the Azure OpenAI API in which `content` is missing instead of null.
+    if (!("content" in message)) message.content = null;
+
     this.messages.push(message);
+
     if (emit) {
       this._emit("message", message);
       if (
@@ -275,6 +279,9 @@ export abstract class AbstractChatCompletionRunner<
       if (isAssistantMessage(message) && message?.function_call) {
         return message.function_call;
       }
+      if (isAssistantMessage(message) && message?.tool_calls?.length) {
+        return message.tool_calls.at(-1)?.function;
+      }
     }
 
     return;
@@ -295,7 +302,20 @@ export abstract class AbstractChatCompletionRunner<
     for (let i = this.messages.length - 1; i >= 0; i--) {
       const message = this.messages[i];
       if (isFunctionMessage(message) && message.content != null) {
-        return message.content as string;
+        return message.content;
+      }
+      if (
+        isToolMessage(message) &&
+        message.content != null &&
+        this.messages.some(
+          (x) =>
+            x.role === "assistant" &&
+            x.tool_calls?.some((y) =>
+              y.type === "function" && y.id === message.tool_call_id
+            ),
+        )
+      ) {
+        return message.content;
       }
     }
 
@@ -358,7 +378,9 @@ export abstract class AbstractChatCompletionRunner<
     ...args: EventParameters<Events, Event>
   ) {
     // make sure we don't emit any events after end
-    if (this.#ended) return;
+    if (this.#ended) {
+      return;
+    }
 
     if (event === "end") {
       this.#ended = true;
@@ -405,7 +427,7 @@ export abstract class AbstractChatCompletionRunner<
   protected _emitFinal() {
     const completion = this._chatCompletions[this._chatCompletions.length - 1];
     if (completion) this._emit("finalChatCompletion", completion);
-    const finalMessage = this.messages[this.messages.length - 1];
+    const finalMessage = this.#getFinalMessage();
     if (finalMessage) this._emit("finalMessage", finalMessage);
     const finalContent = this.#getFinalContent();
     if (finalContent) this._emit("finalContent", finalContent);
@@ -610,7 +632,9 @@ export abstract class AbstractChatCompletionRunner<
       if (!message) {
         throw new OpenAIError(`missing message in ChatCompletion response`);
       }
-      if (!message.tool_calls) return;
+      if (!message.tool_calls) {
+        return;
+      }
 
       for (const tool_call of message.tool_calls) {
         if (tool_call.type !== "function") continue;
@@ -658,9 +682,13 @@ export abstract class AbstractChatCompletionRunner<
         const content = this.#stringifyFunctionCallResult(rawContent);
         this._addMessage({ role, tool_call_id, content });
 
-        if (singleFunctionToCall) return;
+        if (singleFunctionToCall) {
+          return;
+        }
       }
     }
+
+    return;
   }
 
   #stringifyFunctionCallResult(rawContent: unknown): string {
