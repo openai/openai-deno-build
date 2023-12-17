@@ -187,7 +187,7 @@ export interface MessageCreationStepDetails {
   message_creation: MessageCreationStepDetails.MessageCreation;
 
   /**
-   * Always `message_creation``.
+   * Always `message_creation`.
    */
   type: "message_creation";
 }
@@ -276,7 +276,7 @@ export interface RunStep {
   metadata: unknown | null;
 
   /**
-   * The object type, which is always `thread.run.step``.
+   * The object type, which is always `thread.run.step`.
    */
   object: "thread.run.step";
 

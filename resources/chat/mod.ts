@@ -19,6 +19,7 @@ export {
   type ChatCompletionNamedToolChoice,
   type ChatCompletionRole,
   type ChatCompletionSystemMessageParam,
+  type ChatCompletionTokenLogprob,
   type ChatCompletionTool,
   type ChatCompletionToolChoiceOption,
   type ChatCompletionToolMessageParam,

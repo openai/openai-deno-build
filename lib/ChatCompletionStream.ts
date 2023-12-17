@@ -166,16 +166,29 @@ export class ChatCompletionStream
       Object.assign(snapshot, rest);
     }
 
-    for (const { delta, finish_reason, index, ...other } of chunk.choices) {
+    for (
+      const { delta, finish_reason, index, logprobs = null, ...other } of chunk
+        .choices
+    ) {
       let choice = snapshot.choices[index];
       if (!choice) {
         snapshot.choices[index] = {
           finish_reason,
           index,
           message: delta,
+          logprobs,
           ...other,
         };
         continue;
+      }
+
+      if (logprobs) {
+        if (!choice.logprobs) {
+          choice.logprobs = logprobs;
+        } else if (logprobs.content) {
+          choice.logprobs.content ??= [];
+          choice.logprobs.content.push(...logprobs.content);
+        }
       }
 
       if (finish_reason) choice.finish_reason = finish_reason;
@@ -276,7 +289,7 @@ function finalizeChatCompletion(
   return {
     id,
     choices: choices.map(
-      ({ message, finish_reason, index }): ChatCompletion.Choice => {
+      ({ message, finish_reason, index, logprobs }): ChatCompletion.Choice => {
         if (!finish_reason) {
           throw new OpenAIError(`missing finish_reason for choice ${index}`);
         }
@@ -303,12 +316,14 @@ function finalizeChatCompletion(
             },
             finish_reason,
             index,
+            logprobs,
           };
         }
         if (tool_calls) {
           return {
             index,
             finish_reason,
+            logprobs,
             message: {
               role,
               content,
@@ -349,7 +364,12 @@ function finalizeChatCompletion(
             },
           };
         }
-        return { message: { content: content, role }, finish_reason, index };
+        return {
+          message: { content: content, role },
+          finish_reason,
+          index,
+          logprobs,
+        };
       },
     ),
     created,
@@ -404,6 +424,11 @@ export namespace ChatCompletionSnapshot {
      * if the model called a function.
      */
     finish_reason: ChatCompletion.Choice["finish_reason"] | null;
+
+    /**
+     * Log probability information for the choice.
+     */
+    logprobs: ChatCompletion.Choice.Logprobs | null;
 
     /**
      * The index of the choice in the list of choices.
