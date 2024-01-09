@@ -62,9 +62,7 @@ const defaultHttpsAgent: Agent = new KeepAliveAgent.HttpsAgent({
   timeout: 5 * 60 * 1000,
 });
 
-async function getMultipartRequestOptions<
-  T extends {} = Record<string, unknown>,
->(
+async function getMultipartRequestOptions<T = Record<string, unknown>>(
   form: fd.FormData,
   opts: RequestOptions<T>,
 ): Promise<RequestOptions<T>> {
