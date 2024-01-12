@@ -19,7 +19,6 @@ export {
   type EmbeddingCreateParams,
   Embeddings,
 } from "./embeddings.ts";
-export { type Edit, type EditCreateParams, Edits } from "./edits.ts";
 export {
   type FileContent,
   type FileCreateParams,
@@ -29,17 +28,6 @@ export {
   FileObjectsPage,
   Files,
 } from "./files.ts";
-export {
-  type FineTune,
-  type FineTuneCreateParams,
-  type FineTuneEvent,
-  type FineTuneEventsListResponse,
-  type FineTuneListEventsParams,
-  type FineTuneListEventsParamsNonStreaming,
-  type FineTuneListEventsParamsStreaming,
-  FineTunes,
-  FineTunesPage,
-} from "./fine-tunes.ts";
 export { FineTuning } from "./fine-tuning/fine-tuning.ts";
 export {
   type Image,

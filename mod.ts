@@ -142,7 +142,6 @@ export class OpenAI extends Core.APIClient {
 
   completions: API.Completions = new API.Completions(this);
   chat: API.Chat = new API.Chat(this);
-  edits: API.Edits = new API.Edits(this);
   embeddings: API.Embeddings = new API.Embeddings(this);
   files: API.Files = new API.Files(this);
   images: API.Images = new API.Images(this);
@@ -150,7 +149,6 @@ export class OpenAI extends Core.APIClient {
   moderations: API.Moderations = new API.Moderations(this);
   models: API.Models = new API.Models(this);
   fineTuning: API.FineTuning = new API.FineTuning(this);
-  fineTunes: API.FineTunes = new API.FineTunes(this);
   beta: API.Beta = new API.Beta(this);
 
   protected override defaultQuery(): Core.DefaultQuery | undefined {
@@ -265,10 +263,6 @@ export namespace OpenAI {
   export type ChatCompletionCreateParamsStreaming =
     API.ChatCompletionCreateParamsStreaming;
 
-  export import Edits = API.Edits;
-  export type Edit = API.Edit;
-  export type EditCreateParams = API.EditCreateParams;
-
   export import Embeddings = API.Embeddings;
   export type CreateEmbeddingResponse = API.CreateEmbeddingResponse;
   export type Embedding = API.Embedding;
@@ -302,18 +296,6 @@ export namespace OpenAI {
   export import ModelsPage = API.ModelsPage;
 
   export import FineTuning = API.FineTuning;
-
-  export import FineTunes = API.FineTunes;
-  export type FineTune = API.FineTune;
-  export type FineTuneEvent = API.FineTuneEvent;
-  export type FineTuneEventsListResponse = API.FineTuneEventsListResponse;
-  export import FineTunesPage = API.FineTunesPage;
-  export type FineTuneCreateParams = API.FineTuneCreateParams;
-  export type FineTuneListEventsParams = API.FineTuneListEventsParams;
-  export type FineTuneListEventsParamsNonStreaming =
-    API.FineTuneListEventsParamsNonStreaming;
-  export type FineTuneListEventsParamsStreaming =
-    API.FineTuneListEventsParamsStreaming;
 
   export import Beta = API.Beta;
 
