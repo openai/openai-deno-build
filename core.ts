@@ -50,6 +50,14 @@ async function defaultParseResponse<T>(props: APIResponseProps): Promise<T> {
 
     // Note: there is an invariant here that isn't represented in the type system
     // that if you set `stream: true` the response type must also be `Stream<T>`
+
+    if (props.options.__streamClass) {
+      return props.options.__streamClass.fromSSEResponse(
+        response,
+        props.controller,
+      ) as any;
+    }
+
     return Stream.fromSSEResponse(response, props.controller) as any;
   }
 
@@ -389,6 +397,11 @@ export abstract class APIClient {
   }
 
   /**
+   * Used as a callback for mutating the given `FinalRequestOptions` object.
+   */
+  protected async prepareOptions(options: FinalRequestOptions): Promise<void> {}
+
+  /**
    * Used as a callback for mutating the given `RequestInit` object.
    *
    * This is useful for cases where you want to add certain headers based off of
@@ -437,6 +450,8 @@ export abstract class APIClient {
     if (retriesRemaining == null) {
       retriesRemaining = options.maxRetries ?? this.maxRetries;
     }
+
+    await this.prepareOptions(options);
 
     const { req, url, timeout } = this.buildRequest(options);
 
@@ -849,6 +864,7 @@ export type RequestOptions<Req = unknown | Record<string, unknown> | Readable> =
     idempotencyKey?: string;
 
     __binaryResponse?: boolean | undefined;
+    __streamClass?: typeof Stream;
   };
 
 // This is required so that we can determine if a given object matches the RequestOptions
@@ -869,6 +885,7 @@ const requestOptionsKeys: KeysEnum<RequestOptions> = {
   idempotencyKey: true,
 
   __binaryResponse: true,
+  __streamClass: true,
 };
 
 export const isRequestOptions = (obj: unknown): obj is RequestOptions => {
@@ -1303,6 +1320,11 @@ export const toBase64 = (str: string | null | undefined): string => {
     "Cannot generate b64 string; Expected `Buffer` or `btoa` to be defined",
   );
 };
+
+export function isObj(obj: unknown): obj is Record<string, unknown> {
+  return obj != null && typeof obj === "object" && !Array.isArray(obj);
+}
+
 declare let Buffer: any;
 
 type Buffer = any;
