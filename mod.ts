@@ -1,10 +1,10 @@
 // File generated from our OpenAPI spec by Stainless.
 
 import * as Core from "./core.ts";
-import * as Pagination from "./pagination.ts";
 import * as Errors from "./error.ts";
 import { type Agent } from "./_shims/mod.ts";
 import * as Uploads from "./uploads.ts";
+import * as Pagination from "./pagination.ts";
 import * as API from "./resources/mod.ts";
 
 export interface ClientOptions {
