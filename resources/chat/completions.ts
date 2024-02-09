@@ -700,6 +700,7 @@ export interface ChatCompletionCreateParamsBase {
     | "gpt-3.5-turbo-0301"
     | "gpt-3.5-turbo-0613"
     | "gpt-3.5-turbo-1106"
+    | "gpt-3.5-turbo-0125"
     | "gpt-3.5-turbo-16k-0613";
 
   /**
@@ -782,7 +783,7 @@ export interface ChatCompletionCreateParamsBase {
   /**
    * An object specifying the format that the model must output. Compatible with
    * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and
-   * `gpt-3.5-turbo-1106`.
+   * all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
    *
    * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
    * message the model generates is valid JSON.
@@ -903,7 +904,7 @@ export namespace ChatCompletionCreateParams {
   /**
    * An object specifying the format that the model must output. Compatible with
    * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and
-   * `gpt-3.5-turbo-1106`.
+   * all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
    *
    * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
    * message the model generates is valid JSON.
