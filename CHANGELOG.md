@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.27.1 (2024-02-12)
+
+Full Changelog:
+[v4.27.0...v4.27.1](https://github.com/openai/openai-node/compare/v4.27.0...v4.27.1)
+
 ## 4.27.0 (2024-02-08)
 
 Full Changelog:
