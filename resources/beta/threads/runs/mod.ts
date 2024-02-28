@@ -18,6 +18,7 @@ export {
   type RunListParams,
   Runs,
   RunsPage,
+  type RunStatus,
   type RunSubmitToolOutputsParams,
   type RunUpdateParams,
 } from "./runs.ts";

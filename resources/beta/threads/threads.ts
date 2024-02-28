@@ -317,6 +317,7 @@ export namespace Threads {
   export type RequiredActionFunctionToolCall =
     RunsAPI.RequiredActionFunctionToolCall;
   export type Run = RunsAPI.Run;
+  export type RunStatus = RunsAPI.RunStatus;
   export import RunsPage = RunsAPI.RunsPage;
   export type RunCreateParams = RunsAPI.RunCreateParams;
   export type RunUpdateParams = RunsAPI.RunUpdateParams;
