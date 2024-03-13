@@ -7,7 +7,16 @@ export {
   type AssistantListParams,
   Assistants,
   AssistantsPage,
+  type AssistantStreamEvent,
+  type AssistantTool,
   type AssistantUpdateParams,
+  type CodeInterpreterTool,
+  type FunctionTool,
+  type MessageStreamEvent,
+  type RetrievalTool,
+  type RunStepStreamEvent,
+  type RunStreamEvent,
+  type ThreadStreamEvent,
 } from "./assistants.ts";
 export {
   type AssistantFile,

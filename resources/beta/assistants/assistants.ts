@@ -6,6 +6,10 @@ import { isRequestOptions } from "../../../core.ts";
 import * as AssistantsAPI from "./assistants.ts";
 import * as Shared from "../../shared.ts";
 import * as FilesAPI from "./files.ts";
+import * as ThreadsAPI from "../threads/threads.ts";
+import * as MessagesAPI from "../threads/messages/messages.ts";
+import * as RunsAPI from "../threads/runs/runs.ts";
+import * as StepsAPI from "../threads/runs/steps.ts";
 import { CursorPage, type CursorPageParams } from "../../../pagination.ts";
 
 export class Assistants extends APIResource {
@@ -156,34 +160,7 @@ export interface Assistant {
    * A list of tool enabled on the assistant. There can be a maximum of 128 tools per
    * assistant. Tools can be of types `code_interpreter`, `retrieval`, or `function`.
    */
-  tools: Array<
-    Assistant.CodeInterpreter | Assistant.Retrieval | Assistant.Function
-  >;
-}
-
-export namespace Assistant {
-  export interface CodeInterpreter {
-    /**
-     * The type of tool being defined: `code_interpreter`
-     */
-    type: "code_interpreter";
-  }
-
-  export interface Retrieval {
-    /**
-     * The type of tool being defined: `retrieval`
-     */
-    type: "retrieval";
-  }
-
-  export interface Function {
-    function: Shared.FunctionDefinition;
-
-    /**
-     * The type of tool being defined: `function`
-     */
-    type: "function";
-  }
+  tools: Array<AssistantTool>;
 }
 
 export interface AssistantDeleted {
@@ -192,6 +169,768 @@ export interface AssistantDeleted {
   deleted: boolean;
 
   object: "assistant.deleted";
+}
+
+/**
+ * Represents an event emitted when streaming a Run.
+ *
+ * Each event in a server-sent events stream has an `event` and `data` property:
+ *
+ * ```
+ * event: thread.created
+ * data: {"id": "thread_123", "object": "thread", ...}
+ * ```
+ *
+ * We emit events whenever a new object is created, transitions to a new state, or
+ * is being streamed in parts (deltas). For example, we emit `thread.run.created`
+ * when a new run is created, `thread.run.completed` when a run completes, and so
+ * on. When an Assistant chooses to create a message during a run, we emit a
+ * `thread.message.created event`, a `thread.message.in_progress` event, many
+ * `thread.message.delta` events, and finally a `thread.message.completed` event.
+ *
+ * We may add additional events over time, so we recommend handling unknown events
+ * gracefully in your code. See the
+ * [Assistants API quickstart](https://platform.openai.com/docs/assistants/overview)
+ * to learn how to integrate the Assistants API with streaming.
+ */
+export type AssistantStreamEvent =
+  | AssistantStreamEvent.ThreadCreated
+  | AssistantStreamEvent.ThreadRunCreated
+  | AssistantStreamEvent.ThreadRunQueued
+  | AssistantStreamEvent.ThreadRunInProgress
+  | AssistantStreamEvent.ThreadRunRequiresAction
+  | AssistantStreamEvent.ThreadRunCompleted
+  | AssistantStreamEvent.ThreadRunFailed
+  | AssistantStreamEvent.ThreadRunCancelling
+  | AssistantStreamEvent.ThreadRunCancelled
+  | AssistantStreamEvent.ThreadRunExpired
+  | AssistantStreamEvent.ThreadRunStepCreated
+  | AssistantStreamEvent.ThreadRunStepInProgress
+  | AssistantStreamEvent.ThreadRunStepDelta
+  | AssistantStreamEvent.ThreadRunStepCompleted
+  | AssistantStreamEvent.ThreadRunStepFailed
+  | AssistantStreamEvent.ThreadRunStepCancelled
+  | AssistantStreamEvent.ThreadRunStepExpired
+  | AssistantStreamEvent.ThreadMessageCreated
+  | AssistantStreamEvent.ThreadMessageInProgress
+  | AssistantStreamEvent.ThreadMessageDelta
+  | AssistantStreamEvent.ThreadMessageCompleted
+  | AssistantStreamEvent.ThreadMessageIncomplete
+  | AssistantStreamEvent.ErrorEvent;
+
+export namespace AssistantStreamEvent {
+  /**
+   * Occurs when a new
+   * [thread](https://platform.openai.com/docs/api-reference/threads/object) is
+   * created.
+   */
+  export interface ThreadCreated {
+    /**
+     * Represents a thread that contains
+     * [messages](https://platform.openai.com/docs/api-reference/messages).
+     */
+    data: ThreadsAPI.Thread;
+
+    event: "thread.created";
+  }
+
+  /**
+   * Occurs when a new
+   * [run](https://platform.openai.com/docs/api-reference/runs/object) is created.
+   */
+  export interface ThreadRunCreated {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.created";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to a `queued` status.
+   */
+  export interface ThreadRunQueued {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.queued";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to an `in_progress` status.
+   */
+  export interface ThreadRunInProgress {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.in_progress";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to a `requires_action` status.
+   */
+  export interface ThreadRunRequiresAction {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.requires_action";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * is completed.
+   */
+  export interface ThreadRunCompleted {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.completed";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * fails.
+   */
+  export interface ThreadRunFailed {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.failed";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to a `cancelling` status.
+   */
+  export interface ThreadRunCancelling {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.cancelling";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * is cancelled.
+   */
+  export interface ThreadRunCancelled {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.cancelled";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * expires.
+   */
+  export interface ThreadRunExpired {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.expired";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) is
+   * created.
+   */
+  export interface ThreadRunStepCreated {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.created";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object)
+   * moves to an `in_progress` state.
+   */
+  export interface ThreadRunStepInProgress {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.in_progress";
+  }
+
+  /**
+   * Occurs when parts of a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) are
+   * being streamed.
+   */
+  export interface ThreadRunStepDelta {
+    /**
+     * Represents a run step delta i.e. any changed fields on a run step during
+     * streaming.
+     */
+    data: StepsAPI.RunStepDeltaEvent;
+
+    event: "thread.run.step.delta";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) is
+   * completed.
+   */
+  export interface ThreadRunStepCompleted {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.completed";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object)
+   * fails.
+   */
+  export interface ThreadRunStepFailed {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.failed";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) is
+   * cancelled.
+   */
+  export interface ThreadRunStepCancelled {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.cancelled";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object)
+   * expires.
+   */
+  export interface ThreadRunStepExpired {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.expired";
+  }
+
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) is
+   * created.
+   */
+  export interface ThreadMessageCreated {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.created";
+  }
+
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) moves
+   * to an `in_progress` state.
+   */
+  export interface ThreadMessageInProgress {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.in_progress";
+  }
+
+  /**
+   * Occurs when parts of a
+   * [Message](https://platform.openai.com/docs/api-reference/messages/object) are
+   * being streamed.
+   */
+  export interface ThreadMessageDelta {
+    /**
+     * Represents a message delta i.e. any changed fields on a message during
+     * streaming.
+     */
+    data: MessagesAPI.MessageDeltaEvent;
+
+    event: "thread.message.delta";
+  }
+
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) is
+   * completed.
+   */
+  export interface ThreadMessageCompleted {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.completed";
+  }
+
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) ends
+   * before it is completed.
+   */
+  export interface ThreadMessageIncomplete {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.incomplete";
+  }
+
+  /**
+   * Occurs when an
+   * [error](https://platform.openai.com/docs/guides/error-codes/api-errors) occurs.
+   * This can happen due to an internal server error or a timeout.
+   */
+  export interface ErrorEvent {
+    data: Shared.ErrorObject;
+
+    event: "error";
+  }
+}
+
+export type AssistantTool = CodeInterpreterTool | RetrievalTool | FunctionTool;
+
+export interface CodeInterpreterTool {
+  /**
+   * The type of tool being defined: `code_interpreter`
+   */
+  type: "code_interpreter";
+}
+
+export interface FunctionTool {
+  function: Shared.FunctionDefinition;
+
+  /**
+   * The type of tool being defined: `function`
+   */
+  type: "function";
+}
+
+/**
+ * Occurs when a
+ * [message](https://platform.openai.com/docs/api-reference/messages/object) is
+ * created.
+ */
+export type MessageStreamEvent =
+  | MessageStreamEvent.ThreadMessageCreated
+  | MessageStreamEvent.ThreadMessageInProgress
+  | MessageStreamEvent.ThreadMessageDelta
+  | MessageStreamEvent.ThreadMessageCompleted
+  | MessageStreamEvent.ThreadMessageIncomplete;
+
+export namespace MessageStreamEvent {
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) is
+   * created.
+   */
+  export interface ThreadMessageCreated {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.created";
+  }
+
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) moves
+   * to an `in_progress` state.
+   */
+  export interface ThreadMessageInProgress {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.in_progress";
+  }
+
+  /**
+   * Occurs when parts of a
+   * [Message](https://platform.openai.com/docs/api-reference/messages/object) are
+   * being streamed.
+   */
+  export interface ThreadMessageDelta {
+    /**
+     * Represents a message delta i.e. any changed fields on a message during
+     * streaming.
+     */
+    data: MessagesAPI.MessageDeltaEvent;
+
+    event: "thread.message.delta";
+  }
+
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) is
+   * completed.
+   */
+  export interface ThreadMessageCompleted {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.completed";
+  }
+
+  /**
+   * Occurs when a
+   * [message](https://platform.openai.com/docs/api-reference/messages/object) ends
+   * before it is completed.
+   */
+  export interface ThreadMessageIncomplete {
+    /**
+     * Represents a message within a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: MessagesAPI.Message;
+
+    event: "thread.message.incomplete";
+  }
+}
+
+export interface RetrievalTool {
+  /**
+   * The type of tool being defined: `retrieval`
+   */
+  type: "retrieval";
+}
+
+/**
+ * Occurs when a
+ * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) is
+ * created.
+ */
+export type RunStepStreamEvent =
+  | RunStepStreamEvent.ThreadRunStepCreated
+  | RunStepStreamEvent.ThreadRunStepInProgress
+  | RunStepStreamEvent.ThreadRunStepDelta
+  | RunStepStreamEvent.ThreadRunStepCompleted
+  | RunStepStreamEvent.ThreadRunStepFailed
+  | RunStepStreamEvent.ThreadRunStepCancelled
+  | RunStepStreamEvent.ThreadRunStepExpired;
+
+export namespace RunStepStreamEvent {
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) is
+   * created.
+   */
+  export interface ThreadRunStepCreated {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.created";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object)
+   * moves to an `in_progress` state.
+   */
+  export interface ThreadRunStepInProgress {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.in_progress";
+  }
+
+  /**
+   * Occurs when parts of a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) are
+   * being streamed.
+   */
+  export interface ThreadRunStepDelta {
+    /**
+     * Represents a run step delta i.e. any changed fields on a run step during
+     * streaming.
+     */
+    data: StepsAPI.RunStepDeltaEvent;
+
+    event: "thread.run.step.delta";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) is
+   * completed.
+   */
+  export interface ThreadRunStepCompleted {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.completed";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object)
+   * fails.
+   */
+  export interface ThreadRunStepFailed {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.failed";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object) is
+   * cancelled.
+   */
+  export interface ThreadRunStepCancelled {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.cancelled";
+  }
+
+  /**
+   * Occurs when a
+   * [run step](https://platform.openai.com/docs/api-reference/runs/step-object)
+   * expires.
+   */
+  export interface ThreadRunStepExpired {
+    /**
+     * Represents a step in execution of a run.
+     */
+    data: StepsAPI.RunStep;
+
+    event: "thread.run.step.expired";
+  }
+}
+
+/**
+ * Occurs when a new
+ * [run](https://platform.openai.com/docs/api-reference/runs/object) is created.
+ */
+export type RunStreamEvent =
+  | RunStreamEvent.ThreadRunCreated
+  | RunStreamEvent.ThreadRunQueued
+  | RunStreamEvent.ThreadRunInProgress
+  | RunStreamEvent.ThreadRunRequiresAction
+  | RunStreamEvent.ThreadRunCompleted
+  | RunStreamEvent.ThreadRunFailed
+  | RunStreamEvent.ThreadRunCancelling
+  | RunStreamEvent.ThreadRunCancelled
+  | RunStreamEvent.ThreadRunExpired;
+
+export namespace RunStreamEvent {
+  /**
+   * Occurs when a new
+   * [run](https://platform.openai.com/docs/api-reference/runs/object) is created.
+   */
+  export interface ThreadRunCreated {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.created";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to a `queued` status.
+   */
+  export interface ThreadRunQueued {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.queued";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to an `in_progress` status.
+   */
+  export interface ThreadRunInProgress {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.in_progress";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to a `requires_action` status.
+   */
+  export interface ThreadRunRequiresAction {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.requires_action";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * is completed.
+   */
+  export interface ThreadRunCompleted {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.completed";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * fails.
+   */
+  export interface ThreadRunFailed {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.failed";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * moves to a `cancelling` status.
+   */
+  export interface ThreadRunCancelling {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.cancelling";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * is cancelled.
+   */
+  export interface ThreadRunCancelled {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.cancelled";
+  }
+
+  /**
+   * Occurs when a [run](https://platform.openai.com/docs/api-reference/runs/object)
+   * expires.
+   */
+  export interface ThreadRunExpired {
+    /**
+     * Represents an execution run on a
+     * [thread](https://platform.openai.com/docs/api-reference/threads).
+     */
+    data: RunsAPI.Run;
+
+    event: "thread.run.expired";
+  }
+}
+
+/**
+ * Occurs when a new
+ * [thread](https://platform.openai.com/docs/api-reference/threads/object) is
+ * created.
+ */
+export interface ThreadStreamEvent {
+  /**
+   * Represents a thread that contains
+   * [messages](https://platform.openai.com/docs/api-reference/messages).
+   */
+  data: ThreadsAPI.Thread;
+
+  event: "thread.created";
 }
 
 export interface AssistantCreateParams {
@@ -239,36 +978,7 @@ export interface AssistantCreateParams {
    * A list of tool enabled on the assistant. There can be a maximum of 128 tools per
    * assistant. Tools can be of types `code_interpreter`, `retrieval`, or `function`.
    */
-  tools?: Array<
-    | AssistantCreateParams.AssistantToolsCode
-    | AssistantCreateParams.AssistantToolsRetrieval
-    | AssistantCreateParams.AssistantToolsFunction
-  >;
-}
-
-export namespace AssistantCreateParams {
-  export interface AssistantToolsCode {
-    /**
-     * The type of tool being defined: `code_interpreter`
-     */
-    type: "code_interpreter";
-  }
-
-  export interface AssistantToolsRetrieval {
-    /**
-     * The type of tool being defined: `retrieval`
-     */
-    type: "retrieval";
-  }
-
-  export interface AssistantToolsFunction {
-    function: Shared.FunctionDefinition;
-
-    /**
-     * The type of tool being defined: `function`
-     */
-    type: "function";
-  }
+  tools?: Array<AssistantTool>;
 }
 
 export interface AssistantUpdateParams {
@@ -318,36 +1028,7 @@ export interface AssistantUpdateParams {
    * A list of tool enabled on the assistant. There can be a maximum of 128 tools per
    * assistant. Tools can be of types `code_interpreter`, `retrieval`, or `function`.
    */
-  tools?: Array<
-    | AssistantUpdateParams.AssistantToolsCode
-    | AssistantUpdateParams.AssistantToolsRetrieval
-    | AssistantUpdateParams.AssistantToolsFunction
-  >;
-}
-
-export namespace AssistantUpdateParams {
-  export interface AssistantToolsCode {
-    /**
-     * The type of tool being defined: `code_interpreter`
-     */
-    type: "code_interpreter";
-  }
-
-  export interface AssistantToolsRetrieval {
-    /**
-     * The type of tool being defined: `retrieval`
-     */
-    type: "retrieval";
-  }
-
-  export interface AssistantToolsFunction {
-    function: Shared.FunctionDefinition;
-
-    /**
-     * The type of tool being defined: `function`
-     */
-    type: "function";
-  }
+  tools?: Array<AssistantTool>;
 }
 
 export interface AssistantListParams extends CursorPageParams {
@@ -369,6 +1050,15 @@ export interface AssistantListParams extends CursorPageParams {
 export namespace Assistants {
   export type Assistant = AssistantsAPI.Assistant;
   export type AssistantDeleted = AssistantsAPI.AssistantDeleted;
+  export type AssistantStreamEvent = AssistantsAPI.AssistantStreamEvent;
+  export type AssistantTool = AssistantsAPI.AssistantTool;
+  export type CodeInterpreterTool = AssistantsAPI.CodeInterpreterTool;
+  export type FunctionTool = AssistantsAPI.FunctionTool;
+  export type MessageStreamEvent = AssistantsAPI.MessageStreamEvent;
+  export type RetrievalTool = AssistantsAPI.RetrievalTool;
+  export type RunStepStreamEvent = AssistantsAPI.RunStepStreamEvent;
+  export type RunStreamEvent = AssistantsAPI.RunStreamEvent;
+  export type ThreadStreamEvent = AssistantsAPI.ThreadStreamEvent;
   export import AssistantsPage = AssistantsAPI.AssistantsPage;
   export type AssistantCreateParams = AssistantsAPI.AssistantCreateParams;
   export type AssistantUpdateParams = AssistantsAPI.AssistantUpdateParams;

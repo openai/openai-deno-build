@@ -1,12 +1,18 @@
 // File generated from our OpenAPI spec by Stainless.
 
 import * as Core from "../../../core.ts";
+import { APIPromise } from "../../../core.ts";
 import { APIResource } from "../../../resource.ts";
 import { isRequestOptions } from "../../../core.ts";
+import {
+  AssistantStream,
+  ThreadCreateAndRunParamsBaseStream,
+} from "../../../lib/AssistantStream.ts";
 import * as ThreadsAPI from "./threads.ts";
-import * as Shared from "../../shared.ts";
+import * as AssistantsAPI from "../assistants/assistants.ts";
 import * as MessagesAPI from "./messages/messages.ts";
 import * as RunsAPI from "./runs/runs.ts";
+import { Stream } from "../../../streaming.ts";
 
 export class Threads extends APIResource {
   runs: RunsAPI.Runs = new RunsAPI.Runs(this._client);
@@ -79,14 +85,45 @@ export class Threads extends APIResource {
    * Create a thread and run it in one request.
    */
   createAndRun(
+    body: ThreadCreateAndRunParamsNonStreaming,
+    options?: Core.RequestOptions,
+  ): APIPromise<RunsAPI.Run>;
+  createAndRun(
+    body: ThreadCreateAndRunParamsStreaming,
+    options?: Core.RequestOptions,
+  ): APIPromise<Stream<AssistantsAPI.AssistantStreamEvent>>;
+  createAndRun(
+    body: ThreadCreateAndRunParamsBase,
+    options?: Core.RequestOptions,
+  ): APIPromise<Stream<AssistantsAPI.AssistantStreamEvent> | RunsAPI.Run>;
+  createAndRun(
     body: ThreadCreateAndRunParams,
     options?: Core.RequestOptions,
-  ): Core.APIPromise<RunsAPI.Run> {
+  ):
+    | APIPromise<RunsAPI.Run>
+    | APIPromise<Stream<AssistantsAPI.AssistantStreamEvent>> {
     return this._client.post("/threads/runs", {
       body,
       ...options,
       headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
-    });
+      stream: body.stream ?? false,
+    }) as
+      | APIPromise<RunsAPI.Run>
+      | APIPromise<Stream<AssistantsAPI.AssistantStreamEvent>>;
+  }
+
+  /**
+   * Create a thread and stream the run back
+   */
+  createAndRunStream(
+    body: ThreadCreateAndRunParamsBaseStream,
+    options?: Core.RequestOptions,
+  ): AssistantStream {
+    return AssistantStream.createThreadAssistantStream(
+      body,
+      this._client.beta.threads,
+      options,
+    );
   }
 }
 
@@ -184,7 +221,11 @@ export interface ThreadUpdateParams {
   metadata?: unknown | null;
 }
 
-export interface ThreadCreateAndRunParams {
+export type ThreadCreateAndRunParams =
+  | ThreadCreateAndRunParamsNonStreaming
+  | ThreadCreateAndRunParamsStreaming;
+
+export interface ThreadCreateAndRunParamsBase {
   /**
    * The ID of the
    * [assistant](https://platform.openai.com/docs/api-reference/assistants) to use to
@@ -215,6 +256,13 @@ export interface ThreadCreateAndRunParams {
   model?: string | null;
 
   /**
+   * If `true`, returns a stream of events that happen during the Run as server-sent
+   * events, terminating when the Run enters a terminal state with a `data: [DONE]`
+   * message.
+   */
+  stream?: boolean | null;
+
+  /**
    * If no thread is provided, an empty thread will be created.
    */
   thread?: ThreadCreateAndRunParams.Thread;
@@ -225,9 +273,9 @@ export interface ThreadCreateAndRunParams {
    */
   tools?:
     | Array<
-      | ThreadCreateAndRunParams.AssistantToolsCode
-      | ThreadCreateAndRunParams.AssistantToolsRetrieval
-      | ThreadCreateAndRunParams.AssistantToolsFunction
+      | AssistantsAPI.CodeInterpreterTool
+      | AssistantsAPI.RetrievalTool
+      | AssistantsAPI.FunctionTool
     >
     | null;
 }
@@ -283,27 +331,129 @@ export namespace ThreadCreateAndRunParams {
     }
   }
 
-  export interface AssistantToolsCode {
+  export type ThreadCreateAndRunParamsNonStreaming =
+    ThreadsAPI.ThreadCreateAndRunParamsNonStreaming;
+  export type ThreadCreateAndRunParamsStreaming =
+    ThreadsAPI.ThreadCreateAndRunParamsStreaming;
+}
+
+export interface ThreadCreateAndRunParamsNonStreaming
+  extends ThreadCreateAndRunParamsBase {
+  /**
+   * If `true`, returns a stream of events that happen during the Run as server-sent
+   * events, terminating when the Run enters a terminal state with a `data: [DONE]`
+   * message.
+   */
+  stream?: false | null;
+}
+
+export interface ThreadCreateAndRunParamsStreaming
+  extends ThreadCreateAndRunParamsBase {
+  /**
+   * If `true`, returns a stream of events that happen during the Run as server-sent
+   * events, terminating when the Run enters a terminal state with a `data: [DONE]`
+   * message.
+   */
+  stream: true;
+}
+
+export interface ThreadCreateAndRunStreamParams {
+  /**
+   * The ID of the
+   * [assistant](https://platform.openai.com/docs/api-reference/assistants) to use to
+   * execute this run.
+   */
+  assistant_id: string;
+
+  /**
+   * Override the default system message of the assistant. This is useful for
+   * modifying the behavior on a per-run basis.
+   */
+  instructions?: string | null;
+
+  /**
+   * Set of 16 key-value pairs that can be attached to an object. This can be useful
+   * for storing additional information about the object in a structured format. Keys
+   * can be a maximum of 64 characters long and values can be a maxium of 512
+   * characters long.
+   */
+  metadata?: unknown | null;
+
+  /**
+   * The ID of the [Model](https://platform.openai.com/docs/api-reference/models) to
+   * be used to execute this run. If a value is provided here, it will override the
+   * model associated with the assistant. If not, the model associated with the
+   * assistant will be used.
+   */
+  model?: string | null;
+
+  /**
+   * If no thread is provided, an empty thread will be created.
+   */
+  thread?: ThreadCreateAndRunStreamParams.Thread;
+
+  /**
+   * Override the tools the assistant can use for this run. This is useful for
+   * modifying the behavior on a per-run basis.
+   */
+  tools?:
+    | Array<
+      | AssistantsAPI.CodeInterpreterTool
+      | AssistantsAPI.RetrievalTool
+      | AssistantsAPI.FunctionTool
+    >
+    | null;
+}
+
+export namespace ThreadCreateAndRunStreamParams {
+  /**
+   * If no thread is provided, an empty thread will be created.
+   */
+  export interface Thread {
     /**
-     * The type of tool being defined: `code_interpreter`
+     * A list of [messages](https://platform.openai.com/docs/api-reference/messages) to
+     * start the thread with.
      */
-    type: "code_interpreter";
+    messages?: Array<Thread.Message>;
+
+    /**
+     * Set of 16 key-value pairs that can be attached to an object. This can be useful
+     * for storing additional information about the object in a structured format. Keys
+     * can be a maximum of 64 characters long and values can be a maxium of 512
+     * characters long.
+     */
+    metadata?: unknown | null;
   }
 
-  export interface AssistantToolsRetrieval {
-    /**
-     * The type of tool being defined: `retrieval`
-     */
-    type: "retrieval";
-  }
+  export namespace Thread {
+    export interface Message {
+      /**
+       * The content of the message.
+       */
+      content: string;
 
-  export interface AssistantToolsFunction {
-    function: Shared.FunctionDefinition;
+      /**
+       * The role of the entity that is creating the message. Currently only `user` is
+       * supported.
+       */
+      role: "user";
 
-    /**
-     * The type of tool being defined: `function`
-     */
-    type: "function";
+      /**
+       * A list of [File](https://platform.openai.com/docs/api-reference/files) IDs that
+       * the message should use. There can be a maximum of 10 files attached to a
+       * message. Useful for tools like `retrieval` and `code_interpreter` that can
+       * access and use files.
+       */
+      file_ids?: Array<string>;
+
+      /**
+       * Set of 16 key-value pairs that can be attached to an object. This can be useful
+       * for storing additional information about the object in a structured format. Keys
+       * can be a maximum of 64 characters long and values can be a maxium of 512
+       * characters long.
+       */
+      metadata?: unknown | null;
+    }
   }
 }
 
@@ -313,6 +463,12 @@ export namespace Threads {
   export type ThreadCreateParams = ThreadsAPI.ThreadCreateParams;
   export type ThreadUpdateParams = ThreadsAPI.ThreadUpdateParams;
   export type ThreadCreateAndRunParams = ThreadsAPI.ThreadCreateAndRunParams;
+  export type ThreadCreateAndRunParamsNonStreaming =
+    ThreadsAPI.ThreadCreateAndRunParamsNonStreaming;
+  export type ThreadCreateAndRunParamsStreaming =
+    ThreadsAPI.ThreadCreateAndRunParamsStreaming;
+  export type ThreadCreateAndRunStreamParams =
+    ThreadsAPI.ThreadCreateAndRunStreamParams;
   export import Runs = RunsAPI.Runs;
   export type RequiredActionFunctionToolCall =
     RunsAPI.RequiredActionFunctionToolCall;
@@ -320,15 +476,41 @@ export namespace Threads {
   export type RunStatus = RunsAPI.RunStatus;
   export import RunsPage = RunsAPI.RunsPage;
   export type RunCreateParams = RunsAPI.RunCreateParams;
+  export type RunCreateParamsNonStreaming = RunsAPI.RunCreateParamsNonStreaming;
+  export type RunCreateParamsStreaming = RunsAPI.RunCreateParamsStreaming;
   export type RunUpdateParams = RunsAPI.RunUpdateParams;
   export type RunListParams = RunsAPI.RunListParams;
+  export type RunCreateAndStreamParams = RunsAPI.RunCreateAndStreamParams;
   export type RunSubmitToolOutputsParams = RunsAPI.RunSubmitToolOutputsParams;
+  export type RunSubmitToolOutputsParamsNonStreaming =
+    RunsAPI.RunSubmitToolOutputsParamsNonStreaming;
+  export type RunSubmitToolOutputsParamsStreaming =
+    RunsAPI.RunSubmitToolOutputsParamsStreaming;
+  export type RunSubmitToolOutputsStreamParams =
+    RunsAPI.RunSubmitToolOutputsStreamParams;
   export import Messages = MessagesAPI.Messages;
-  export type MessageContentImageFile = MessagesAPI.MessageContentImageFile;
-  export type MessageContentText = MessagesAPI.MessageContentText;
-  export type ThreadMessage = MessagesAPI.ThreadMessage;
-  export type ThreadMessageDeleted = MessagesAPI.ThreadMessageDeleted;
-  export import ThreadMessagesPage = MessagesAPI.ThreadMessagesPage;
+  export type Annotation = MessagesAPI.Annotation;
+  export type AnnotationDelta = MessagesAPI.AnnotationDelta;
+  export type FileCitationAnnotation = MessagesAPI.FileCitationAnnotation;
+  export type FileCitationDeltaAnnotation =
+    MessagesAPI.FileCitationDeltaAnnotation;
+  export type FilePathAnnotation = MessagesAPI.FilePathAnnotation;
+  export type FilePathDeltaAnnotation = MessagesAPI.FilePathDeltaAnnotation;
+  export type ImageFile = MessagesAPI.ImageFile;
+  export type ImageFileContentBlock = MessagesAPI.ImageFileContentBlock;
+  export type ImageFileDelta = MessagesAPI.ImageFileDelta;
+  export type ImageFileDeltaBlock = MessagesAPI.ImageFileDeltaBlock;
+  export type Message = MessagesAPI.Message;
+  export type MessageContent = MessagesAPI.MessageContent;
+  export type MessageContentDelta = MessagesAPI.MessageContentDelta;
+  export type MessageDeleted = MessagesAPI.MessageDeleted;
+  export type MessageDelta = MessagesAPI.MessageDelta;
+  export type MessageDeltaEvent = MessagesAPI.MessageDeltaEvent;
+  export type Text = MessagesAPI.Text;
+  export type TextContentBlock = MessagesAPI.TextContentBlock;
+  export type TextDelta = MessagesAPI.TextDelta;
+  export type TextDeltaBlock = MessagesAPI.TextDeltaBlock;
+  export import MessagesPage = MessagesAPI.MessagesPage;
   export type MessageCreateParams = MessagesAPI.MessageCreateParams;
   export type MessageUpdateParams = MessagesAPI.MessageUpdateParams;
   export type MessageListParams = MessagesAPI.MessageListParams;
