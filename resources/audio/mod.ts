@@ -1,4 +1,4 @@
-// File generated from our OpenAPI spec by Stainless.
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 export { Audio } from "./audio.ts";
 export { Speech, type SpeechCreateParams } from "./speech.ts";
