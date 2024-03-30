@@ -196,7 +196,7 @@ export class AssistantStream
       this.controller,
     );
     for await (const event of stream) {
-      this.#handleEvent(event);
+      this.#addEvent(event);
     }
     if (stream.controller.signal?.aborted) {
       throw new APIUserAbortError();
