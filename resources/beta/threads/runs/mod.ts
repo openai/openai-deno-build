@@ -25,6 +25,7 @@ export {
 export {
   type RequiredActionFunctionToolCall,
   type Run,
+  type RunCreateAndPollParams,
   type RunCreateAndStreamParams,
   type RunCreateParams,
   type RunCreateParamsNonStreaming,
@@ -33,6 +34,8 @@ export {
   Runs,
   RunsPage,
   type RunStatus,
+  type RunStreamParams,
+  type RunSubmitToolOutputsAndPollParams,
   type RunSubmitToolOutputsParams,
   type RunSubmitToolOutputsParamsNonStreaming,
   type RunSubmitToolOutputsParamsStreaming,

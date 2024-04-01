@@ -25,6 +25,7 @@ export {
   type ThreadCreateAndRunParams,
   type ThreadCreateAndRunParamsNonStreaming,
   type ThreadCreateAndRunParamsStreaming,
+  type ThreadCreateAndRunPollParams,
   type ThreadCreateAndRunStreamParams,
   type ThreadCreateParams,
   type ThreadDeleted,
