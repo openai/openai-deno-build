@@ -3,6 +3,13 @@
 export * from "./chat/mod.ts";
 export * from "./shared.ts";
 export { Audio } from "./audio/audio.ts";
+export {
+  type Batch,
+  type BatchCreateParams,
+  type BatchError,
+  Batches,
+  type BatchRequestCounts,
+} from "./batches.ts";
 export { Beta } from "./beta/beta.ts";
 export {
   type Completion,

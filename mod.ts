@@ -150,6 +150,7 @@ export class OpenAI extends Core.APIClient {
   models: API.Models = new API.Models(this);
   fineTuning: API.FineTuning = new API.FineTuning(this);
   beta: API.Beta = new API.Beta(this);
+  batches: API.Batches = new API.Batches(this);
 
   protected override defaultQuery(): Core.DefaultQuery | undefined {
     return this._options.defaultQuery;
@@ -298,6 +299,12 @@ export namespace OpenAI {
   export import FineTuning = API.FineTuning;
 
   export import Beta = API.Beta;
+
+  export import Batches = API.Batches;
+  export type Batch = API.Batch;
+  export type BatchError = API.BatchError;
+  export type BatchRequestCounts = API.BatchRequestCounts;
+  export type BatchCreateParams = API.BatchCreateParams;
 
   export type ErrorObject = API.ErrorObject;
   export type FunctionDefinition = API.FunctionDefinition;

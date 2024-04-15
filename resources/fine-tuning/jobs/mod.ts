@@ -1,6 +1,5 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-export { FineTuning } from "./fine-tuning.ts";
 export {
   type FineTuningJob,
   type FineTuningJobEvent,
@@ -13,4 +12,10 @@ export {
   type JobListEventsParams,
   type JobListParams,
   Jobs,
-} from "./jobs/mod.ts";
+} from "./jobs.ts";
+export {
+  type CheckpointListParams,
+  Checkpoints,
+  type FineTuningJobCheckpoint,
+  FineTuningJobCheckpointsPage,
+} from "./checkpoints.ts";

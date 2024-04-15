@@ -28,6 +28,23 @@ export {
   type TextDeltaBlock,
 } from "./messages/mod.ts";
 export {
+  type AssistantResponseFormat,
+  type AssistantResponseFormatOption,
+  type AssistantToolChoice,
+  type AssistantToolChoiceFunction,
+  type AssistantToolChoiceOption,
+  type Thread,
+  type ThreadCreateAndRunParams,
+  type ThreadCreateAndRunParamsNonStreaming,
+  type ThreadCreateAndRunParamsStreaming,
+  type ThreadCreateAndRunPollParams,
+  type ThreadCreateAndRunStreamParams,
+  type ThreadCreateParams,
+  type ThreadDeleted,
+  Threads,
+  type ThreadUpdateParams,
+} from "./threads.ts";
+export {
   type RequiredActionFunctionToolCall,
   type Run,
   type RunCreateAndPollParams,
@@ -47,15 +64,3 @@ export {
   type RunSubmitToolOutputsStreamParams,
   type RunUpdateParams,
 } from "./runs/mod.ts";
-export {
-  type Thread,
-  type ThreadCreateAndRunParams,
-  type ThreadCreateAndRunParamsNonStreaming,
-  type ThreadCreateAndRunParamsStreaming,
-  type ThreadCreateAndRunPollParams,
-  type ThreadCreateAndRunStreamParams,
-  type ThreadCreateParams,
-  type ThreadDeleted,
-  Threads,
-  type ThreadUpdateParams,
-} from "./threads.ts";

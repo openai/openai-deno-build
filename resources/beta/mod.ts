@@ -18,9 +18,12 @@ export {
   type RunStreamEvent,
   type ThreadStreamEvent,
 } from "./assistants/mod.ts";
-export { Beta } from "./beta.ts";
-export { Chat } from "./chat/mod.ts";
 export {
+  type AssistantResponseFormat,
+  type AssistantResponseFormatOption,
+  type AssistantToolChoice,
+  type AssistantToolChoiceFunction,
+  type AssistantToolChoiceOption,
   type Thread,
   type ThreadCreateAndRunParams,
   type ThreadCreateAndRunParamsNonStreaming,
@@ -32,3 +35,5 @@ export {
   Threads,
   type ThreadUpdateParams,
 } from "./threads/mod.ts";
+export { Beta } from "./beta.ts";
+export { Chat } from "./chat/mod.ts";
