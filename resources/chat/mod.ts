@@ -1,6 +1,5 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-export { Chat } from "./chat.ts";
 export {
   type ChatCompletion,
   type ChatCompletionAssistantMessageParam,
@@ -30,3 +29,4 @@ export {
   Completions,
   type CreateChatCompletionRequestMessage,
 } from "./completions.ts";
+export { Chat, type ChatModel } from "./chat.ts";
