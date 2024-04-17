@@ -155,7 +155,7 @@ export interface AssistantResponseFormat {
 /**
  * Specifies the format that the model must output. Compatible with
  * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and
- * all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+ * all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
  *
  * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
  * message the model generates is valid JSON.
@@ -197,7 +197,7 @@ export interface AssistantToolChoiceFunction {
  * Controls which (if any) tool is called by the model. `none` means the model will
  * not call any tools and instead generates a message. `auto` is the default value
  * and means the model can pick between generating a message or calling a tool.
- * Specifying a particular tool like `{"type": "TOOL_TYPE"}` or
+ * Specifying a particular tool like `{"type": "file_search"}` or
  * `{"type": "function", "function": {"name": "my_function"}}` forces the model to
  * call that tool.
  */
@@ -538,7 +538,7 @@ export interface ThreadCreateAndRunParamsBase {
   /**
    * Specifies the format that the model must output. Compatible with
    * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and
-   * all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+   * all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
    *
    * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
    * message the model generates is valid JSON.
@@ -576,7 +576,7 @@ export interface ThreadCreateAndRunParamsBase {
    * Controls which (if any) tool is called by the model. `none` means the model will
    * not call any tools and instead generates a message. `auto` is the default value
    * and means the model can pick between generating a message or calling a tool.
-   * Specifying a particular tool like `{"type": "TOOL_TYPE"}` or
+   * Specifying a particular tool like `{"type": "file_search"}` or
    * `{"type": "function", "function": {"name": "my_function"}}` forces the model to
    * call that tool.
    */
@@ -606,9 +606,15 @@ export interface ThreadCreateAndRunParamsBase {
    * An alternative to sampling with temperature, called nucleus sampling, where the
    * model considers the results of the tokens with top_p probability mass. So 0.1
    * means only the tokens comprising the top 10% probability mass are considered.
+   *
+   * We generally recommend altering this or temperature but not both.
    */
   top_p?: number | null;
 
+  /**
+   * Controls for how a thread will be truncated prior to the run. Use this to
+   * control the intial context window of the run.
+   */
   truncation_strategy?: ThreadCreateAndRunParams.TruncationStrategy | null;
 }
 
@@ -776,6 +782,10 @@ export namespace ThreadCreateAndRunParams {
     }
   }
 
+  /**
+   * Controls for how a thread will be truncated prior to the run. Use this to
+   * control the intial context window of the run.
+   */
   export interface TruncationStrategy {
     /**
      * The truncation strategy to use for the thread. The default is `auto`. If set to
@@ -889,7 +899,7 @@ export interface ThreadCreateAndRunPollParams {
   /**
    * Specifies the format that the model must output. Compatible with
    * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and
-   * all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+   * all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
    *
    * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
    * message the model generates is valid JSON.
@@ -920,7 +930,7 @@ export interface ThreadCreateAndRunPollParams {
    * Controls which (if any) tool is called by the model. `none` means the model will
    * not call any tools and instead generates a message. `auto` is the default value
    * and means the model can pick between generating a message or calling a tool.
-   * Specifying a particular tool like `{"type": "TOOL_TYPE"}` or
+   * Specifying a particular tool like `{"type": "file_search"}` or
    * `{"type": "function", "function": {"name": "my_function"}}` forces the model to
    * call that tool.
    */
@@ -950,9 +960,15 @@ export interface ThreadCreateAndRunPollParams {
    * An alternative to sampling with temperature, called nucleus sampling, where the
    * model considers the results of the tokens with top_p probability mass. So 0.1
    * means only the tokens comprising the top 10% probability mass are considered.
+   *
+   * We generally recommend altering this or temperature but not both.
    */
   top_p?: number | null;
 
+  /**
+   * Controls for how a thread will be truncated prior to the run. Use this to
+   * control the intial context window of the run.
+   */
   truncation_strategy?: ThreadCreateAndRunPollParams.TruncationStrategy | null;
 }
 
@@ -1120,6 +1136,10 @@ export namespace ThreadCreateAndRunPollParams {
     }
   }
 
+  /**
+   * Controls for how a thread will be truncated prior to the run. Use this to
+   * control the intial context window of the run.
+   */
   export interface TruncationStrategy {
     /**
      * The truncation strategy to use for the thread. The default is `auto`. If set to
@@ -1208,7 +1228,7 @@ export interface ThreadCreateAndRunStreamParams {
   /**
    * Specifies the format that the model must output. Compatible with
    * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and
-   * all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+   * all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
    *
    * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
    * message the model generates is valid JSON.
@@ -1239,7 +1259,7 @@ export interface ThreadCreateAndRunStreamParams {
    * Controls which (if any) tool is called by the model. `none` means the model will
    * not call any tools and instead generates a message. `auto` is the default value
    * and means the model can pick between generating a message or calling a tool.
-   * Specifying a particular tool like `{"type": "TOOL_TYPE"}` or
+   * Specifying a particular tool like `{"type": "file_search"}` or
    * `{"type": "function", "function": {"name": "my_function"}}` forces the model to
    * call that tool.
    */
@@ -1269,9 +1289,15 @@ export interface ThreadCreateAndRunStreamParams {
    * An alternative to sampling with temperature, called nucleus sampling, where the
    * model considers the results of the tokens with top_p probability mass. So 0.1
    * means only the tokens comprising the top 10% probability mass are considered.
+   *
+   * We generally recommend altering this or temperature but not both.
    */
   top_p?: number | null;
 
+  /**
+   * Controls for how a thread will be truncated prior to the run. Use this to
+   * control the intial context window of the run.
+   */
   truncation_strategy?:
     | ThreadCreateAndRunStreamParams.TruncationStrategy
     | null;
@@ -1441,6 +1467,10 @@ export namespace ThreadCreateAndRunStreamParams {
     }
   }
 
+  /**
+   * Controls for how a thread will be truncated prior to the run. Use this to
+   * control the intial context window of the run.
+   */
   export interface TruncationStrategy {
     /**
      * The truncation strategy to use for the thread. The default is `auto`. If set to
