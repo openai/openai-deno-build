@@ -7,7 +7,7 @@ import {
   Text,
   TextContentBlock,
   TextDelta,
-} from "../resources/beta/threads/messages/messages.ts";
+} from "../resources/beta/threads/messages.ts";
 import * as Core from "../core.ts";
 import { RequestOptions } from "../core.ts";
 import {
@@ -30,7 +30,7 @@ import {
   MessageStreamEvent,
   RunStepStreamEvent,
   RunStreamEvent,
-} from "../resources/beta/assistants/assistants.ts";
+} from "../resources/beta/assistants.ts";
 import {
   RunStep,
   RunStepDelta,

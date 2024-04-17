@@ -1,15 +1,12 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../../../../core.ts";
-import { APIResource } from "../../../../resource.ts";
-import { isRequestOptions } from "../../../../core.ts";
+import * as Core from "../../../core.ts";
+import { APIResource } from "../../../resource.ts";
+import { isRequestOptions } from "../../../core.ts";
 import * as MessagesAPI from "./messages.ts";
-import * as FilesAPI from "./files.ts";
-import { CursorPage, type CursorPageParams } from "../../../../pagination.ts";
+import { CursorPage, type CursorPageParams } from "../../../pagination.ts";
 
 export class Messages extends APIResource {
-  files: FilesAPI.Files = new FilesAPI.Files(this._client);
-
   /**
    * Create a message.
    */
@@ -21,7 +18,7 @@ export class Messages extends APIResource {
     return this._client.post(`/threads/${threadId}/messages`, {
       body,
       ...options,
-      headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+      headers: { "OpenAI-Beta": "assistants=v2", ...options?.headers },
     });
   }
 
@@ -35,7 +32,7 @@ export class Messages extends APIResource {
   ): Core.APIPromise<Message> {
     return this._client.get(`/threads/${threadId}/messages/${messageId}`, {
       ...options,
-      headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+      headers: { "OpenAI-Beta": "assistants=v2", ...options?.headers },
     });
   }
 
@@ -51,7 +48,7 @@ export class Messages extends APIResource {
     return this._client.post(`/threads/${threadId}/messages/${messageId}`, {
       body,
       ...options,
-      headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+      headers: { "OpenAI-Beta": "assistants=v2", ...options?.headers },
     });
   }
 
@@ -81,7 +78,7 @@ export class Messages extends APIResource {
       {
         query,
         ...options,
-        headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+        headers: { "OpenAI-Beta": "assistants=v2", ...options?.headers },
       },
     );
   }
@@ -92,14 +89,14 @@ export class MessagesPage extends CursorPage<Message> {}
 /**
  * A citation within the message that points to a specific quote from a specific
  * File associated with the assistant or the message. Generated when the assistant
- * uses the "retrieval" tool to search files.
+ * uses the "file_search" tool to search files.
  */
 export type Annotation = FileCitationAnnotation | FilePathAnnotation;
 
 /**
  * A citation within the message that points to a specific quote from a specific
  * File associated with the assistant or the message. Generated when the assistant
- * uses the "retrieval" tool to search files.
+ * uses the "file_search" tool to search files.
  */
 export type AnnotationDelta =
   | FileCitationDeltaAnnotation
@@ -108,7 +105,7 @@ export type AnnotationDelta =
 /**
  * A citation within the message that points to a specific quote from a specific
  * File associated with the assistant or the message. Generated when the assistant
- * uses the "retrieval" tool to search files.
+ * uses the "file_search" tool to search files.
  */
 export interface FileCitationAnnotation {
   end_index: number;
@@ -145,7 +142,7 @@ export namespace FileCitationAnnotation {
 /**
  * A citation within the message that points to a specific quote from a specific
  * File associated with the assistant or the message. Generated when the assistant
- * uses the "retrieval" tool to search files.
+ * uses the "file_search" tool to search files.
  */
 export interface FileCitationDeltaAnnotation {
   /**
@@ -316,6 +313,11 @@ export interface Message {
   assistant_id: string | null;
 
   /**
+   * A list of files attached to the message, and the tools they were added to.
+   */
+  attachments: Array<Message.Attachment> | null;
+
+  /**
    * The Unix timestamp (in seconds) for when the message was completed.
    */
   completed_at: number | null;
@@ -329,13 +331,6 @@ export interface Message {
    * The Unix timestamp (in seconds) for when the message was created.
    */
   created_at: number;
-
-  /**
-   * A list of [file](https://platform.openai.com/docs/api-reference/files) IDs that
-   * the assistant should use. Useful for tools like retrieval and code_interpreter
-   * that can access files. A maximum of 10 files can be attached to a message.
-   */
-  file_ids: Array<string>;
 
   /**
    * The Unix timestamp (in seconds) for when the message was marked as incomplete.
@@ -386,6 +381,15 @@ export interface Message {
 }
 
 export namespace Message {
+  export interface Attachment {
+    add_to?: Array<"file_search" | "code_interpreter">;
+
+    /**
+     * The ID of the file to attach to the message.
+     */
+    file_id?: string;
+  }
+
   /**
    * On an incomplete message, details about why the message is incomplete.
    */
@@ -430,13 +434,6 @@ export interface MessageDelta {
    * The content of the message in array of text and/or images.
    */
   content?: Array<MessageContentDelta>;
-
-  /**
-   * A list of [file](https://platform.openai.com/docs/api-reference/files) IDs that
-   * the assistant should use. Useful for tools like retrieval and code_interpreter
-   * that can access files. A maximum of 10 files can be attached to a message.
-   */
-  file_ids?: Array<string>;
 
   /**
    * The entity that produced the message. One of `user` or `assistant`.
@@ -529,12 +526,9 @@ export interface MessageCreateParams {
   role: "user" | "assistant";
 
   /**
-   * A list of [File](https://platform.openai.com/docs/api-reference/files) IDs that
-   * the message should use. There can be a maximum of 10 files attached to a
-   * message. Useful for tools like `retrieval` and `code_interpreter` that can
-   * access and use files.
+   * A list of files attached to the message, and the tools they should be added to.
    */
-  file_ids?: Array<string>;
+  attachments?: Array<MessageCreateParams.Attachment> | null;
 
   /**
    * Set of 16 key-value pairs that can be attached to an object. This can be useful
@@ -543,6 +537,17 @@ export interface MessageCreateParams {
    * characters long.
    */
   metadata?: unknown | null;
+}
+
+export namespace MessageCreateParams {
+  export interface Attachment {
+    add_to?: Array<"file_search" | "code_interpreter">;
+
+    /**
+     * The ID of the file to attach to the message.
+     */
+    file_id?: string;
+  }
 }
 
 export interface MessageUpdateParams {
@@ -602,8 +607,4 @@ export namespace Messages {
   export type MessageCreateParams = MessagesAPI.MessageCreateParams;
   export type MessageUpdateParams = MessagesAPI.MessageUpdateParams;
   export type MessageListParams = MessagesAPI.MessageListParams;
-  export import Files = FilesAPI.Files;
-  export type MessageFile = FilesAPI.MessageFile;
-  export import MessageFilesPage = FilesAPI.MessageFilesPage;
-  export type FileListParams = FilesAPI.FileListParams;
 }

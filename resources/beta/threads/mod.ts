@@ -26,7 +26,7 @@ export {
   type TextContentBlock,
   type TextDelta,
   type TextDeltaBlock,
-} from "./messages/mod.ts";
+} from "./messages.ts";
 export {
   type AssistantResponseFormat,
   type AssistantResponseFormatOption,

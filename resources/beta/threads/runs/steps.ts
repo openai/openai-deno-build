@@ -20,7 +20,7 @@ export class Steps extends APIResource {
       `/threads/${threadId}/runs/${runId}/steps/${stepId}`,
       {
         ...options,
-        headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+        headers: { "OpenAI-Beta": "assistants=v2", ...options?.headers },
       },
     );
   }
@@ -54,7 +54,7 @@ export class Steps extends APIResource {
       {
         query,
         ...options,
-        headers: { "OpenAI-Beta": "assistants=v1", ...options?.headers },
+        headers: { "OpenAI-Beta": "assistants=v2", ...options?.headers },
       },
     );
   }
@@ -229,6 +229,47 @@ export namespace CodeInterpreterToolCallDelta {
   }
 }
 
+export interface FileSearchToolCall {
+  /**
+   * The ID of the tool call object.
+   */
+  id: string;
+
+  /**
+   * For now, this is always going to be an empty object.
+   */
+  file_search: unknown;
+
+  /**
+   * The type of tool call. This is always going to be `file_search` for this type of
+   * tool call.
+   */
+  type: "file_search";
+}
+
+export interface FileSearchToolCallDelta {
+  /**
+   * For now, this is always going to be an empty object.
+   */
+  file_search: unknown;
+
+  /**
+   * The index of the tool call in the tool calls array.
+   */
+  index: number;
+
+  /**
+   * The type of tool call. This is always going to be `file_search` for this type of
+   * tool call.
+   */
+  type: "file_search";
+
+  /**
+   * The ID of the tool call object.
+   */
+  id?: string;
+}
+
 export interface FunctionToolCall {
   /**
    * The ID of the tool call object.
@@ -337,47 +378,6 @@ export namespace MessageCreationStepDetails {
      */
     message_id: string;
   }
-}
-
-export interface RetrievalToolCall {
-  /**
-   * The ID of the tool call object.
-   */
-  id: string;
-
-  /**
-   * For now, this is always going to be an empty object.
-   */
-  retrieval: unknown;
-
-  /**
-   * The type of tool call. This is always going to be `retrieval` for this type of
-   * tool call.
-   */
-  type: "retrieval";
-}
-
-export interface RetrievalToolCallDelta {
-  /**
-   * The index of the tool call in the tool calls array.
-   */
-  index: number;
-
-  /**
-   * The type of tool call. This is always going to be `retrieval` for this type of
-   * tool call.
-   */
-  type: "retrieval";
-
-  /**
-   * The ID of the tool call object.
-   */
-  id?: string;
-
-  /**
-   * For now, this is always going to be an empty object.
-   */
-  retrieval?: unknown;
 }
 
 /**
@@ -572,7 +572,7 @@ export namespace RunStepDeltaMessageDelta {
  */
 export type ToolCall =
   | CodeInterpreterToolCall
-  | RetrievalToolCall
+  | FileSearchToolCall
   | FunctionToolCall;
 
 /**
@@ -580,7 +580,7 @@ export type ToolCall =
  */
 export type ToolCallDelta =
   | CodeInterpreterToolCallDelta
-  | RetrievalToolCallDelta
+  | FileSearchToolCallDelta
   | FunctionToolCallDelta;
 
 /**
@@ -594,7 +594,7 @@ export interface ToolCallDeltaObject {
 
   /**
    * An array of tool calls the run step was involved in. These can be associated
-   * with one of three types of tools: `code_interpreter`, `retrieval`, or
+   * with one of three types of tools: `code_interpreter`, `file_search`, or
    * `function`.
    */
   tool_calls?: Array<ToolCallDelta>;
@@ -606,7 +606,7 @@ export interface ToolCallDeltaObject {
 export interface ToolCallsStepDetails {
   /**
    * An array of tool calls the run step was involved in. These can be associated
-   * with one of three types of tools: `code_interpreter`, `retrieval`, or
+   * with one of three types of tools: `code_interpreter`, `file_search`, or
    * `function`.
    */
   tool_calls: Array<ToolCall>;
@@ -639,11 +639,11 @@ export namespace Steps {
   export type CodeInterpreterToolCall = StepsAPI.CodeInterpreterToolCall;
   export type CodeInterpreterToolCallDelta =
     StepsAPI.CodeInterpreterToolCallDelta;
+  export type FileSearchToolCall = StepsAPI.FileSearchToolCall;
+  export type FileSearchToolCallDelta = StepsAPI.FileSearchToolCallDelta;
   export type FunctionToolCall = StepsAPI.FunctionToolCall;
   export type FunctionToolCallDelta = StepsAPI.FunctionToolCallDelta;
   export type MessageCreationStepDetails = StepsAPI.MessageCreationStepDetails;
-  export type RetrievalToolCall = StepsAPI.RetrievalToolCall;
-  export type RetrievalToolCallDelta = StepsAPI.RetrievalToolCallDelta;
   export type RunStep = StepsAPI.RunStep;
   export type RunStepDelta = StepsAPI.RunStepDelta;
   export type RunStepDeltaEvent = StepsAPI.RunStepDeltaEvent;

@@ -11,13 +11,13 @@ export {
   type AssistantTool,
   type AssistantUpdateParams,
   type CodeInterpreterTool,
+  type FileSearchTool,
   type FunctionTool,
   type MessageStreamEvent,
-  type RetrievalTool,
   type RunStepStreamEvent,
   type RunStreamEvent,
   type ThreadStreamEvent,
-} from "./assistants/mod.ts";
+} from "./assistants.ts";
 export {
   type AssistantResponseFormat,
   type AssistantResponseFormatOption,
@@ -37,3 +37,12 @@ export {
 } from "./threads/mod.ts";
 export { Beta } from "./beta.ts";
 export { Chat } from "./chat/mod.ts";
+export {
+  type VectorStore,
+  type VectorStoreCreateParams,
+  type VectorStoreDeleted,
+  type VectorStoreListParams,
+  VectorStores,
+  VectorStoresPage,
+  type VectorStoreUpdateParams,
+} from "./vector-stores/mod.ts";
