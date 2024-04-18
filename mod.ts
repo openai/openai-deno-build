@@ -316,7 +316,9 @@ export namespace OpenAI {
   export type Batch = API.Batch;
   export type BatchError = API.BatchError;
   export type BatchRequestCounts = API.BatchRequestCounts;
+  export import BatchesPage = API.BatchesPage;
   export type BatchCreateParams = API.BatchCreateParams;
+  export type BatchListParams = API.BatchListParams;
 
   export type ErrorObject = API.ErrorObject;
   export type FunctionDefinition = API.FunctionDefinition;

@@ -2,7 +2,9 @@
 
 import * as Core from "../core.ts";
 import { APIResource } from "../resource.ts";
+import { isRequestOptions } from "../core.ts";
 import * as BatchesAPI from "./batches.ts";
+import { CursorPage, type CursorPageParams } from "../pagination.ts";
 
 export class Batches extends APIResource {
   /**
@@ -26,6 +28,27 @@ export class Batches extends APIResource {
   }
 
   /**
+   * List your organization's batches.
+   */
+  list(
+    query?: BatchListParams,
+    options?: Core.RequestOptions,
+  ): Core.PagePromise<BatchesPage, Batch>;
+  list(options?: Core.RequestOptions): Core.PagePromise<BatchesPage, Batch>;
+  list(
+    query: BatchListParams | Core.RequestOptions = {},
+    options?: Core.RequestOptions,
+  ): Core.PagePromise<BatchesPage, Batch> {
+    if (isRequestOptions(query)) {
+      return this.list({}, query);
+    }
+    return this._client.getAPIList("/batches", BatchesPage, {
+      query,
+      ...options,
+    });
+  }
+
+  /**
    * Cancels an in-progress batch.
    */
   cancel(
@@ -35,6 +58,8 @@ export class Batches extends APIResource {
     return this._client.post(`/batches/${batchId}/cancel`, options);
   }
 }
+
+export class BatchesPage extends CursorPage<Batch> {}
 
 export interface Batch {
   id: string;
@@ -226,9 +251,13 @@ export interface BatchCreateParams {
   metadata?: Record<string, string> | null;
 }
 
+export interface BatchListParams extends CursorPageParams {}
+
 export namespace Batches {
   export type Batch = BatchesAPI.Batch;
   export type BatchError = BatchesAPI.BatchError;
   export type BatchRequestCounts = BatchesAPI.BatchRequestCounts;
+  export import BatchesPage = BatchesAPI.BatchesPage;
   export type BatchCreateParams = BatchesAPI.BatchCreateParams;
+  export type BatchListParams = BatchesAPI.BatchListParams;
 }

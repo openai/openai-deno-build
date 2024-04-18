@@ -8,6 +8,8 @@ export {
   type BatchCreateParams,
   type BatchError,
   Batches,
+  BatchesPage,
+  type BatchListParams,
   type BatchRequestCounts,
 } from "./batches.ts";
 export { Beta } from "./beta/beta.ts";
