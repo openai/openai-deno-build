@@ -340,12 +340,12 @@ export namespace ThreadCreateParams {
 
   export namespace Message {
     export interface Attachment {
-      add_to?: Array<"file_search" | "code_interpreter">;
-
       /**
        * The ID of the file to attach to the message.
        */
       file_id?: string;
+
+      tools?: Array<"file_search" | "code_interpreter">;
     }
   }
 
@@ -679,12 +679,12 @@ export namespace ThreadCreateAndRunParams {
 
     export namespace Message {
       export interface Attachment {
-        add_to?: Array<"file_search" | "code_interpreter">;
-
         /**
          * The ID of the file to attach to the message.
          */
         file_id?: string;
+
+        tools?: Array<"file_search" | "code_interpreter">;
       }
     }
 
@@ -1033,12 +1033,12 @@ export namespace ThreadCreateAndRunPollParams {
 
     export namespace Message {
       export interface Attachment {
-        add_to?: Array<"file_search" | "code_interpreter">;
-
         /**
          * The ID of the file to attach to the message.
          */
         file_id?: string;
+
+        tools?: Array<"file_search" | "code_interpreter">;
       }
     }
 
@@ -1364,12 +1364,12 @@ export namespace ThreadCreateAndRunStreamParams {
 
     export namespace Message {
       export interface Attachment {
-        add_to?: Array<"file_search" | "code_interpreter">;
-
         /**
          * The ID of the file to attach to the message.
          */
         file_id?: string;
+
+        tools?: Array<"file_search" | "code_interpreter">;
       }
     }
 
