@@ -4,6 +4,7 @@ import * as Core from "../../../core.ts";
 import { APIResource } from "../../../resource.ts";
 import { isRequestOptions } from "../../../core.ts";
 import * as MessagesAPI from "./messages.ts";
+import * as AssistantsAPI from "../assistants.ts";
 import { CursorPage, type CursorPageParams } from "../../../pagination.ts";
 
 export class Messages extends APIResource {
@@ -387,7 +388,12 @@ export namespace Message {
      */
     file_id?: string;
 
-    tools?: Array<"file_search" | "code_interpreter">;
+    /**
+     * The tools to add this file to.
+     */
+    tools?: Array<
+      AssistantsAPI.CodeInterpreterTool | AssistantsAPI.FileSearchTool
+    >;
   }
 
   /**
@@ -546,7 +552,12 @@ export namespace MessageCreateParams {
      */
     file_id?: string;
 
-    tools?: Array<"file_search" | "code_interpreter">;
+    /**
+     * The tools to add this file to.
+     */
+    tools?: Array<
+      AssistantsAPI.CodeInterpreterTool | AssistantsAPI.FileSearchTool
+    >;
   }
 }
 
