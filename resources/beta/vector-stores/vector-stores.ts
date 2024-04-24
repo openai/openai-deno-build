@@ -107,11 +107,6 @@ export interface VectorStore {
   id: string;
 
   /**
-   * The byte size of the vector store.
-   */
-  bytes: number;
-
-  /**
    * The Unix timestamp (in seconds) for when the vector store was created.
    */
   created_at: number;
@@ -147,6 +142,11 @@ export interface VectorStore {
    * for use.
    */
   status: "expired" | "in_progress" | "completed";
+
+  /**
+   * The total number of bytes used by the files in the vector store.
+   */
+  usage_bytes: number;
 
   /**
    * The expiration policy for a vector store.
