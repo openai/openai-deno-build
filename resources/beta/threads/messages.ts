@@ -83,6 +83,20 @@ export class Messages extends APIResource {
       },
     );
   }
+
+  /**
+   * Deletes a message.
+   */
+  del(
+    threadId: string,
+    messageId: string,
+    options?: Core.RequestOptions,
+  ): Core.APIPromise<MessageDeleted> {
+    return this._client.delete(`/threads/${threadId}/messages/${messageId}`, {
+      ...options,
+      headers: { "OpenAI-Beta": "assistants=v2", ...options?.headers },
+    });
+  }
 }
 
 export class MessagesPage extends CursorPage<Message> {}
