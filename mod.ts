@@ -259,6 +259,7 @@ export namespace OpenAI {
   export type ChatCompletionMessageToolCall = API.ChatCompletionMessageToolCall;
   export type ChatCompletionNamedToolChoice = API.ChatCompletionNamedToolChoice;
   export type ChatCompletionRole = API.ChatCompletionRole;
+  export type ChatCompletionStreamOptions = API.ChatCompletionStreamOptions;
   export type ChatCompletionSystemMessageParam =
     API.ChatCompletionSystemMessageParam;
   export type ChatCompletionTokenLogprob = API.ChatCompletionTokenLogprob;

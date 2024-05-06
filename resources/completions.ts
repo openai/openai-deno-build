@@ -4,6 +4,7 @@ import * as Core from "../core.ts";
 import { APIPromise } from "../core.ts";
 import { APIResource } from "../resource.ts";
 import * as CompletionsAPI from "./completions.ts";
+import * as ChatCompletionsAPI from "./chat/completions.ts";
 import { Stream } from "../streaming.ts";
 
 export class Completions extends APIResource {
@@ -263,6 +264,11 @@ export interface CompletionCreateParamsBase {
    * [Example Python code](https://cookbook.openai.com/examples/how_to_stream_completions).
    */
   stream?: boolean | null;
+
+  /**
+   * Options for streaming response. Only set this when you set `stream: true`.
+   */
+  stream_options?: ChatCompletionsAPI.ChatCompletionStreamOptions | null;
 
   /**
    * The suffix that comes after a completion of inserted text.

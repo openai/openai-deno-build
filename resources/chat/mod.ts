@@ -17,6 +17,7 @@ export {
   type ChatCompletionMessageToolCall,
   type ChatCompletionNamedToolChoice,
   type ChatCompletionRole,
+  type ChatCompletionStreamOptions,
   type ChatCompletionSystemMessageParam,
   type ChatCompletionTokenLogprob,
   type ChatCompletionTool,

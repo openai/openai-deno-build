@@ -56,6 +56,8 @@ export namespace Chat {
   export type ChatCompletionNamedToolChoice =
     CompletionsAPI.ChatCompletionNamedToolChoice;
   export type ChatCompletionRole = CompletionsAPI.ChatCompletionRole;
+  export type ChatCompletionStreamOptions =
+    CompletionsAPI.ChatCompletionStreamOptions;
   export type ChatCompletionSystemMessageParam =
     CompletionsAPI.ChatCompletionSystemMessageParam;
   export type ChatCompletionTokenLogprob =
