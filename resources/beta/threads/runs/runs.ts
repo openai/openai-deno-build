@@ -12,6 +12,7 @@ import { sleep } from "../../../../core.ts";
 import { RunSubmitToolOutputsParamsStream } from "../../../../lib/AssistantStream.ts";
 import * as RunsAPI from "./runs.ts";
 import * as AssistantsAPI from "../../assistants.ts";
+import * as MessagesAPI from "../messages.ts";
 import * as ThreadsAPI from "../threads.ts";
 import * as StepsAPI from "./steps.ts";
 import { CursorPage, type CursorPageParams } from "../../../../pagination.ts";
@@ -792,9 +793,9 @@ export interface RunCreateParamsBase {
 export namespace RunCreateParams {
   export interface AdditionalMessage {
     /**
-     * The content of the message.
+     * The text contents of the message.
      */
-    content: string;
+    content: string | Array<MessagesAPI.MessageContentPartParam>;
 
     /**
      * The role of the entity that is creating the message. Allowed values include:
@@ -1046,9 +1047,9 @@ export interface RunCreateAndPollParams {
 export namespace RunCreateAndPollParams {
   export interface AdditionalMessage {
     /**
-     * The content of the message.
+     * The text contents of the message.
      */
-    content: string;
+    content: string | Array<MessagesAPI.MessageContentPartParam>;
 
     /**
      * The role of the entity that is creating the message. Allowed values include:
@@ -1255,9 +1256,9 @@ export interface RunCreateAndStreamParams {
 export namespace RunCreateAndStreamParams {
   export interface AdditionalMessage {
     /**
-     * The content of the message.
+     * The text contents of the message.
      */
-    content: string;
+    content: string | Array<MessagesAPI.MessageContentPartParam>;
 
     /**
      * The role of the entity that is creating the message. Allowed values include:
@@ -1462,9 +1463,9 @@ export interface RunStreamParams {
 export namespace RunStreamParams {
   export interface AdditionalMessage {
     /**
-     * The content of the message.
+     * The text contents of the message.
      */
-    content: string;
+    content: string | Array<MessagesAPI.MessageContentPartParam>;
 
     /**
      * The role of the entity that is creating the message. Allowed values include:
