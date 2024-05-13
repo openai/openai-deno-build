@@ -705,6 +705,8 @@ export interface RunCreateParamsBase {
    */
   model?:
     | (string & {})
+    | "gpt-4o"
+    | "gpt-4o-2024-05-13"
     | "gpt-4-turbo"
     | "gpt-4-turbo-2024-04-09"
     | "gpt-4-0125-preview"
@@ -966,6 +968,8 @@ export interface RunCreateAndPollParams {
    */
   model?:
     | (string & {})
+    | "gpt-4o"
+    | "gpt-4o-2024-05-13"
     | "gpt-4-turbo"
     | "gpt-4-turbo-2024-04-09"
     | "gpt-4-0125-preview"
@@ -1175,6 +1179,8 @@ export interface RunCreateAndStreamParams {
    */
   model?:
     | (string & {})
+    | "gpt-4o"
+    | "gpt-4o-2024-05-13"
     | "gpt-4-turbo"
     | "gpt-4-turbo-2024-04-09"
     | "gpt-4-0125-preview"
@@ -1382,6 +1388,8 @@ export interface RunStreamParams {
    */
   model?:
     | (string & {})
+    | "gpt-4o"
+    | "gpt-4o-2024-05-13"
     | "gpt-4-turbo"
     | "gpt-4-turbo-2024-04-09"
     | "gpt-4-0125-preview"
