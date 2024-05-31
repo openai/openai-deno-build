@@ -515,7 +515,6 @@ const _deployments_endpoints = new Set([
   "/audio/translations",
   "/audio/speech",
   "/images/generations",
-  "/batches",
 ]);
 
 const API_KEY_SENTINEL = "<Missing Key>";
