@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.51.0 (2024-06-12)
+
+Full Changelog:
+[v4.50.0...v4.51.0](https://github.com/openai/openai-node/compare/v4.50.0...v4.51.0)
+
+### Features
+
+- **api:** updates ([#894](https://github.com/openai/openai-node/issues/894))
+  ([b58f5a1](https://github.com/openai/openai-node/commit/b58f5a1344f631dac0fb8ecfa4fbae49af070189))
+
 ## 4.50.0 (2024-06-10)
 
 Full Changelog:
