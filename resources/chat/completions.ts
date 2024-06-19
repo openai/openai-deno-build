@@ -71,6 +71,12 @@ export interface ChatCompletion {
   object: "chat.completion";
 
   /**
+   * The service tier used for processing the request. This field is only included if
+   * the `service_tier` parameter is specified in the request.
+   */
+  service_tier?: "scale" | "default" | null;
+
+  /**
    * This fingerprint represents the backend configuration that the model runs with.
    *
    * Can be used in conjunction with the `seed` request parameter to understand when
@@ -213,6 +219,12 @@ export interface ChatCompletionChunk {
    * The object type, which is always `chat.completion.chunk`.
    */
   object: "chat.completion.chunk";
+
+  /**
+   * The service tier used for processing the request. This field is only included if
+   * the `service_tier` parameter is specified in the request.
+   */
+  service_tier?: "scale" | "default" | null;
 
   /**
    * This fingerprint represents the backend configuration that the model runs with.
@@ -825,6 +837,19 @@ export interface ChatCompletionCreateParamsBase {
    * in the backend.
    */
   seed?: number | null;
+
+  /**
+   * Specifies the latency tier to use for processing the request. This parameter is
+   * relevant for customers subscribed to the scale tier service:
+   *
+   * - If set to 'auto', the system will utilize scale tier credits until they are
+   *   exhausted.
+   * - If set to 'default', the request will be processed in the shared cluster.
+   *
+   * When this parameter is set, the response body will include the `service_tier`
+   * utilized.
+   */
+  service_tier?: "auto" | "default" | null;
 
   /**
    * Up to 4 sequences where the API will stop generating further tokens.
