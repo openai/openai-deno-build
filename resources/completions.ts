@@ -1,8 +1,8 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../core.ts";
-import { APIPromise } from "../core.ts";
 import { APIResource } from "../resource.ts";
+import { APIPromise } from "../core.ts";
+import * as Core from "../core.ts";
 import * as CompletionsAPI from "./completions.ts";
 import * as ChatCompletionsAPI from "./chat/completions.ts";
 import { Stream } from "../streaming.ts";

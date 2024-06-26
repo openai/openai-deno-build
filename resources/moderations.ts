@@ -1,7 +1,7 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../core.ts";
 import { APIResource } from "../resource.ts";
+import * as Core from "../core.ts";
 import * as ModerationsAPI from "./moderations.ts";
 
 export class Moderations extends APIResource {

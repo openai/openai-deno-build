@@ -1,8 +1,8 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../../../core.ts";
 import { APIResource } from "../../../resource.ts";
 import { isRequestOptions } from "../../../core.ts";
+import * as Core from "../../../core.ts";
 import * as JobsAPI from "./jobs.ts";
 import * as CheckpointsAPI from "./checkpoints.ts";
 import { CursorPage, type CursorPageParams } from "../../../pagination.ts";

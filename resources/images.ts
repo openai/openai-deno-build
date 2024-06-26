@@ -1,9 +1,8 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../core.ts";
 import { APIResource } from "../resource.ts";
+import * as Core from "../core.ts";
 import * as ImagesAPI from "./images.ts";
-import { multipartFormRequestOptions, type Uploadable } from "../core.ts";
 
 export class Images extends APIResource {
   /**
@@ -15,7 +14,7 @@ export class Images extends APIResource {
   ): Core.APIPromise<ImagesResponse> {
     return this._client.post(
       "/images/variations",
-      multipartFormRequestOptions({ body, ...options }),
+      Core.multipartFormRequestOptions({ body, ...options }),
     );
   }
 
@@ -28,7 +27,7 @@ export class Images extends APIResource {
   ): Core.APIPromise<ImagesResponse> {
     return this._client.post(
       "/images/edits",
-      multipartFormRequestOptions({ body, ...options }),
+      Core.multipartFormRequestOptions({ body, ...options }),
     );
   }
 
@@ -76,7 +75,7 @@ export interface ImageCreateVariationParams {
    * The image to use as the basis for the variation(s). Must be a valid PNG file,
    * less than 4MB, and square.
    */
-  image: Uploadable;
+  image: Core.Uploadable;
 
   /**
    * The model to use for image generation. Only `dall-e-2` is supported at this
@@ -116,7 +115,7 @@ export interface ImageEditParams {
    * The image to edit. Must be a valid PNG file, less than 4MB, and square. If mask
    * is not provided, image must have transparency, which will be used as the mask.
    */
-  image: Uploadable;
+  image: Core.Uploadable;
 
   /**
    * A text description of the desired image(s). The maximum length is 1000
@@ -129,7 +128,7 @@ export interface ImageEditParams {
    * indicate where `image` should be edited. Must be a valid PNG file, less than
    * 4MB, and have the same dimensions as `image`.
    */
-  mask?: Uploadable;
+  mask?: Core.Uploadable;
 
   /**
    * The model to use for image generation. Only `dall-e-2` is supported at this

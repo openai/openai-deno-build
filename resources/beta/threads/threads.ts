@@ -1,13 +1,13 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../../../core.ts";
-import { APIPromise } from "../../../core.ts";
 import { APIResource } from "../../../resource.ts";
 import { isRequestOptions } from "../../../core.ts";
 import {
   AssistantStream,
   ThreadCreateAndRunParamsBaseStream,
 } from "../../../lib/AssistantStream.ts";
+import { APIPromise } from "../../../core.ts";
+import * as Core from "../../../core.ts";
 import * as ThreadsAPI from "./threads.ts";
 import * as AssistantsAPI from "../assistants.ts";
 import * as MessagesAPI from "./messages.ts";

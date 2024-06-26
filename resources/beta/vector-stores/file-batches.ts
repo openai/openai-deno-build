@@ -1,11 +1,11 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../../../core.ts";
 import { APIResource } from "../../../resource.ts";
 import { isRequestOptions } from "../../../core.ts";
 import { sleep } from "../../../core.ts";
 import { Uploadable } from "../../../core.ts";
 import { allSettledWithThrow } from "../../../lib/Util.ts";
+import * as Core from "../../../core.ts";
 import * as FileBatchesAPI from "./file-batches.ts";
 import * as FilesAPI from "./files.ts";
 import { VectorStoreFilesPage } from "./files.ts";

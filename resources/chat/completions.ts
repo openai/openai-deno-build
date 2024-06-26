@@ -1,8 +1,8 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import * as Core from "../../core.ts";
-import { APIPromise } from "../../core.ts";
 import { APIResource } from "../../resource.ts";
+import { APIPromise } from "../../core.ts";
+import * as Core from "../../core.ts";
 import * as ChatCompletionsAPI from "./completions.ts";
 import * as CompletionsAPI from "../completions.ts";
 import * as Shared from "../shared.ts";
@@ -844,7 +844,8 @@ export interface ChatCompletionCreateParamsBase {
    *
    * - If set to 'auto', the system will utilize scale tier credits until they are
    *   exhausted.
-   * - If set to 'default', the request will be processed in the shared cluster.
+   * - If set to 'default', the request will be processed using the default service
+   *   tier with a lower uptime SLA and no latency guarentee.
    *
    * When this parameter is set, the response body will include the `service_tier`
    * utilized.
