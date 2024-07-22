@@ -53,3 +53,9 @@ export {
   type ModerationCreateResponse,
   Moderations,
 } from "./moderations.ts";
+export {
+  type Upload,
+  type UploadCompleteParams,
+  type UploadCreateParams,
+  Uploads,
+} from "./uploads/uploads.ts";
