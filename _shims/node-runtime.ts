@@ -13,9 +13,7 @@ import { Readable } from "https://deno.land/std@0.177.0/node/stream.ts";
 import { type RequestOptions } from "../core.ts";
 import { MultipartBody } from "./MultipartBody.ts";
 import { type Shims } from "./registry.ts";
-
-// @ts-ignore (this package does not have proper export maps for this export)
-import { ReadableStream } from "npm:web-streams-polyfill/dist/ponyfill.es2018.js";
+import { ReadableStream } from "npm:stream/web";
 
 type FileFromPathOptions = Omit<FilePropertyBag, "lastModified">;
 
