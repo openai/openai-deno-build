@@ -186,6 +186,7 @@ export class OpenAI extends Core.APIClient {
   }
 
   static OpenAI = this;
+  static DEFAULT_TIMEOUT = 600000; // 10 minutes
 
   static OpenAIError = Errors.OpenAIError;
   static APIError = Errors.APIError;
@@ -295,15 +296,18 @@ export namespace OpenAI {
 
   export import Images = API.Images;
   export type Image = API.Image;
+  export type ImageModel = API.ImageModel;
   export type ImagesResponse = API.ImagesResponse;
   export type ImageCreateVariationParams = API.ImageCreateVariationParams;
   export type ImageEditParams = API.ImageEditParams;
   export type ImageGenerateParams = API.ImageGenerateParams;
 
   export import Audio = API.Audio;
+  export type AudioModel = API.AudioModel;
 
   export import Moderations = API.Moderations;
   export type Moderation = API.Moderation;
+  export type ModerationModel = API.ModerationModel;
   export type ModerationCreateResponse = API.ModerationCreateResponse;
   export type ModerationCreateParams = API.ModerationCreateParams;
 

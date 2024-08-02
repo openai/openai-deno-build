@@ -64,6 +64,8 @@ export interface Image {
   url?: string;
 }
 
+export type ImageModel = "dall-e-2" | "dall-e-3";
+
 export interface ImagesResponse {
   created: number;
 
@@ -81,7 +83,7 @@ export interface ImageCreateVariationParams {
    * The model to use for image generation. Only `dall-e-2` is supported at this
    * time.
    */
-  model?: (string & {}) | "dall-e-2" | null;
+  model?: (string & {}) | ImageModel | null;
 
   /**
    * The number of images to generate. Must be between 1 and 10. For `dall-e-3`, only
@@ -134,7 +136,7 @@ export interface ImageEditParams {
    * The model to use for image generation. Only `dall-e-2` is supported at this
    * time.
    */
-  model?: (string & {}) | "dall-e-2" | null;
+  model?: (string & {}) | ImageModel | null;
 
   /**
    * The number of images to generate. Must be between 1 and 10.
@@ -172,7 +174,7 @@ export interface ImageGenerateParams {
   /**
    * The model to use for image generation.
    */
-  model?: (string & {}) | "dall-e-2" | "dall-e-3" | null;
+  model?: (string & {}) | ImageModel | null;
 
   /**
    * The number of images to generate. Must be between 1 and 10. For `dall-e-3`, only
@@ -219,6 +221,7 @@ export interface ImageGenerateParams {
 
 export namespace Images {
   export type Image = ImagesAPI.Image;
+  export type ImageModel = ImagesAPI.ImageModel;
   export type ImagesResponse = ImagesAPI.ImagesResponse;
   export type ImageCreateVariationParams = ImagesAPI.ImageCreateVariationParams;
   export type ImageEditParams = ImagesAPI.ImageEditParams;

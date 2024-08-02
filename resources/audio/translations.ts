@@ -3,6 +3,7 @@
 import { APIResource } from "../../resource.ts";
 import * as Core from "../../core.ts";
 import * as TranslationsAPI from "./translations.ts";
+import * as AudioAPI from "./audio.ts";
 
 export class Translations extends APIResource {
   /**
@@ -34,7 +35,7 @@ export interface TranslationCreateParams {
    * ID of the model to use. Only `whisper-1` (which is powered by our open source
    * Whisper V2 model) is currently available.
    */
-  model: (string & {}) | "whisper-1";
+  model: (string & {}) | AudioAPI.AudioModel;
 
   /**
    * An optional text to guide the model's style or continue a previous audio

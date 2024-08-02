@@ -19,10 +19,6 @@ import {
   RunSubmitToolOutputsParamsBase,
   RunSubmitToolOutputsParamsStreaming,
 } from "../resources/beta/threads/runs/runs.ts";
-import {
-  AbstractAssistantRunnerEvents,
-  AbstractAssistantStreamRunner,
-} from "./AbstractAssistantStreamRunner.ts";
 import { type ReadableStream } from "../_shims/mod.ts";
 import { Stream } from "../streaming.ts";
 import { APIUserAbortError, OpenAIError } from "../error.ts";
@@ -42,9 +38,12 @@ import {
   ThreadCreateAndRunParamsBase,
   Threads,
 } from "../resources/beta/threads/threads.ts";
+import { BaseEvents, EventStream } from "./EventStream.ts";
 export type MessageDelta = Messages.MessageDelta;
 
-export interface AssistantStreamEvents extends AbstractAssistantRunnerEvents {
+export interface AssistantStreamEvents extends BaseEvents {
+  run: (run: Run) => void;
+
   //New event structure
   messageCreated: (message: Message) => void;
   messageDelta: (message: MessageDelta, snapshot: Message) => void;
@@ -65,8 +64,6 @@ export interface AssistantStreamEvents extends AbstractAssistantRunnerEvents {
   //No created or delta as this is not streamed
   imageFileDone: (content: ImageFile, snapshot: Message) => void;
 
-  end: () => void;
-
   event: (event: AssistantStreamEvent) => void;
 }
 
@@ -86,8 +83,7 @@ export type RunSubmitToolOutputsParamsStream =
     stream?: true;
   };
 
-export class AssistantStream
-  extends AbstractAssistantStreamRunner<AssistantStreamEvents>
+export class AssistantStream extends EventStream<AssistantStreamEvents>
   implements AsyncIterable<AssistantStreamEvent> {
   //Track all events in a single list for reference
   #events: AssistantStreamEvent[] = [];
@@ -230,7 +226,7 @@ export class AssistantStream
     return runner;
   }
 
-  protected override async _createToolAssistantStream(
+  protected async _createToolAssistantStream(
     run: Runs,
     threadId: string,
     runId: string,
@@ -330,7 +326,7 @@ export class AssistantStream
     return this.#finalRun;
   }
 
-  protected override async _createThreadAssistantStream(
+  protected async _createThreadAssistantStream(
     thread: Threads,
     params: ThreadCreateAndRunParamsBase,
     options?: Core.RequestOptions,
@@ -359,7 +355,7 @@ export class AssistantStream
     return this._addRun(this.#endRequest());
   }
 
-  protected override async _createAssistantStream(
+  protected async _createAssistantStream(
     run: Runs,
     threadId: string,
     params: RunCreateParamsBase,
@@ -449,7 +445,7 @@ export class AssistantStream
     return this.#finalRun;
   }
 
-  #handleMessage(event: MessageStreamEvent) {
+  #handleMessage(this: AssistantStream, event: MessageStreamEvent) {
     const [accumulatedMessage, newContent] = this.#accumulateMessage(
       event,
       this.#messageSnapshot,
@@ -553,7 +549,7 @@ export class AssistantStream
     }
   }
 
-  #handleRunStep(event: RunStepStreamEvent) {
+  #handleRunStep(this: AssistantStream, event: RunStepStreamEvent) {
     const accumulatedRunStep = this.#accumulateRunStep(event);
     this.#currentRunStepSnapshot = accumulatedRunStep;
 
@@ -613,7 +609,7 @@ export class AssistantStream
     }
   }
 
-  #handleEvent(event: AssistantStreamEvent) {
+  #handleEvent(this: AssistantStream, event: AssistantStreamEvent) {
     this.#events.push(event);
     this._emit("event", event);
   }
@@ -776,7 +772,7 @@ export class AssistantStream
     return acc;
   }
 
-  #handleRun(event: RunStreamEvent) {
+  #handleRun(this: AssistantStream, event: RunStreamEvent) {
     this.#currentRunSnapshot = event.data;
     switch (event.event) {
       case "thread.run.created":
@@ -799,5 +795,42 @@ export class AssistantStream
       case "thread.run.cancelling":
         break;
     }
+  }
+
+  protected _addRun(run: Run): Run {
+    return run;
+  }
+
+  protected async _threadAssistantStream(
+    body: ThreadCreateAndRunParamsBase,
+    thread: Threads,
+    options?: Core.RequestOptions,
+  ): Promise<Run> {
+    return await this._createThreadAssistantStream(thread, body, options);
+  }
+
+  protected async _runAssistantStream(
+    threadId: string,
+    runs: Runs,
+    params: RunCreateParamsBase,
+    options?: Core.RequestOptions,
+  ): Promise<Run> {
+    return await this._createAssistantStream(runs, threadId, params, options);
+  }
+
+  protected async _runToolAssistantStream(
+    threadId: string,
+    runId: string,
+    runs: Runs,
+    params: RunSubmitToolOutputsParamsStream,
+    options?: Core.RequestOptions,
+  ): Promise<Run> {
+    return await this._createToolAssistantStream(
+      runs,
+      threadId,
+      runId,
+      params,
+      options,
+    );
   }
 }

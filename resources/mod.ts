@@ -2,7 +2,7 @@
 
 export * from "./chat/mod.ts";
 export * from "./shared.ts";
-export { Audio } from "./audio/audio.ts";
+export { Audio, type AudioModel } from "./audio/audio.ts";
 export {
   type Batch,
   type BatchCreateParams,
@@ -43,6 +43,7 @@ export {
   type ImageCreateVariationParams,
   type ImageEditParams,
   type ImageGenerateParams,
+  type ImageModel,
   Images,
   type ImagesResponse,
 } from "./images.ts";
@@ -51,6 +52,7 @@ export {
   type Moderation,
   type ModerationCreateParams,
   type ModerationCreateResponse,
+  type ModerationModel,
   Moderations,
 } from "./moderations.ts";
 export {
