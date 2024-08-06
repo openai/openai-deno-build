@@ -1,7 +1,6 @@
 import {
   type ChatCompletionCreateParamsNonStreaming,
   type ChatCompletionMessageParam,
-  type Completions,
 } from "../resources/chat/completions.ts";
 import {
   type BaseFunctionsArgs,
@@ -14,6 +13,8 @@ import {
   RunnerOptions,
 } from "./AbstractChatCompletionRunner.ts";
 import { isAssistantMessage } from "./chatCompletionUtils.ts";
+import OpenAI from "../mod.ts";
+import { AutoParseableTool } from "./parser.ts";
 
 export interface ChatCompletionRunnerEvents
   extends AbstractChatCompletionRunnerEvents {
@@ -39,17 +40,20 @@ export type ChatCompletionToolRunnerParams<
     "tools"
   >
   & {
-    tools: RunnableTools<FunctionsArgs>;
+    tools: RunnableTools<FunctionsArgs> | AutoParseableTool<any, true>[];
   };
 
-export class ChatCompletionRunner
-  extends AbstractChatCompletionRunner<ChatCompletionRunnerEvents> {
+export class ChatCompletionRunner<ParsedT = null>
+  extends AbstractChatCompletionRunner<
+    ChatCompletionRunnerEvents,
+    ParsedT
+  > {
   /** @deprecated - please use `runTools` instead. */
   static runFunctions(
-    completions: Completions,
+    client: OpenAI,
     params: ChatCompletionFunctionRunnerParams<any[]>,
     options?: RunnerOptions,
-  ): ChatCompletionRunner {
+  ): ChatCompletionRunner<null> {
     const runner = new ChatCompletionRunner();
     const opts = {
       ...options,
@@ -58,26 +62,26 @@ export class ChatCompletionRunner
         "X-Stainless-Helper-Method": "runFunctions",
       },
     };
-    runner._run(() => runner._runFunctions(completions, params, opts));
+    runner._run(() => runner._runFunctions(client, params, opts));
     return runner;
   }
 
-  static runTools(
-    completions: Completions,
+  static runTools<ParsedT>(
+    client: OpenAI,
     params: ChatCompletionToolRunnerParams<any[]>,
     options?: RunnerOptions,
-  ): ChatCompletionRunner {
-    const runner = new ChatCompletionRunner();
+  ): ChatCompletionRunner<ParsedT> {
+    const runner = new ChatCompletionRunner<ParsedT>();
     const opts = {
       ...options,
       headers: { ...options?.headers, "X-Stainless-Helper-Method": "runTools" },
     };
-    runner._run(() => runner._runTools(completions, params, opts));
+    runner._run(() => runner._runTools(client, params, opts));
     return runner;
   }
 
   override _addMessage(
-    this: ChatCompletionRunner,
+    this: ChatCompletionRunner<ParsedT>,
     message: ChatCompletionMessageParam,
   ) {
     super._addMessage(message);

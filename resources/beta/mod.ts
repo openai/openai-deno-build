@@ -19,7 +19,6 @@ export {
   type ThreadStreamEvent,
 } from "./assistants.ts";
 export {
-  type AssistantResponseFormat,
   type AssistantResponseFormatOption,
   type AssistantToolChoice,
   type AssistantToolChoiceFunction,

@@ -27,6 +27,8 @@ export {
   Messages,
   MessagesPage,
   type MessageUpdateParams,
+  type RefusalContentBlock,
+  type RefusalDeltaBlock,
   type Text,
   type TextContentBlock,
   type TextContentBlockParam,
@@ -34,7 +36,6 @@ export {
   type TextDeltaBlock,
 } from "./messages.ts";
 export {
-  type AssistantResponseFormat,
   type AssistantResponseFormatOption,
   type AssistantToolChoice,
   type AssistantToolChoiceFunction,

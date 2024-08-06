@@ -9,6 +9,7 @@ import {
 import { APIPromise } from "../../../core.ts";
 import * as Core from "../../../core.ts";
 import * as ThreadsAPI from "./threads.ts";
+import * as Shared from "../../shared.ts";
 import * as AssistantsAPI from "../assistants.ts";
 import * as ChatAPI from "../../chat/chat.ts";
 import * as MessagesAPI from "./messages.ts";
@@ -142,15 +143,16 @@ export class Threads extends APIResource {
 }
 
 /**
- * An object describing the expected output of the model. If `json_object` only
- * `function` type `tools` are allowed to be passed to the Run. If `text` the model
- * can return text or any value needed.
+<<<<<<< HEAD
+ * An object describing the expected output of the model. If `json_object` or
+ * `json_schema`, only `function` type `tools` are allowed to be passed to the Run.
+ * If `text` the model can return text or any value needed.
  */
 export interface AssistantResponseFormat {
   /**
-   * Must be one of `text` or `json_object`.
+   * Must be one of `text`, `json_object` or `json_schema`.
    */
-  type?: "text" | "json_object";
+  type?: "text" | "json_object" | "json_schema";
 }
 
 /**
@@ -158,6 +160,11 @@ export interface AssistantResponseFormat {
  * [GPT-4o](https://platform.openai.com/docs/models/gpt-4o),
  * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4),
  * and all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
+ *
+ * Setting to `{ "type": "json_schema", "json_schema": {...} }` enables Structured
+ * Outputs which guarantees the model will match your supplied JSON schema. Learn
+ * more in the
+ * [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
  *
  * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
  * message the model generates is valid JSON.
@@ -171,9 +178,10 @@ export interface AssistantResponseFormat {
  * max context length.
  */
 export type AssistantResponseFormatOption =
-  | "none"
   | "auto"
-  | AssistantResponseFormat;
+  | Shared.ResponseFormatText
+  | Shared.ResponseFormatJSONObject
+  | Shared.ResponseFormatJSONSchema;
 
 /**
  * Specifies a tool the model should use. Use to force the model to call a specific
@@ -591,6 +599,11 @@ export interface ThreadCreateAndRunParamsBase {
    * [GPT-4o](https://platform.openai.com/docs/models/gpt-4o),
    * [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4),
    * and all GPT-3.5 Turbo models since `gpt-3.5-turbo-1106`.
+   *
+   * Setting to `{ "type": "json_schema", "json_schema": {...} }` enables Structured
+   * Outputs which guarantees the model will match your supplied JSON schema. Learn
+   * more in the
+   * [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
    *
    * Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the
    * message the model generates is valid JSON.
@@ -1619,7 +1632,6 @@ export namespace ThreadCreateAndRunStreamParams {
 }
 
 export namespace Threads {
-  export type AssistantResponseFormat = ThreadsAPI.AssistantResponseFormat;
   export type AssistantResponseFormatOption =
     ThreadsAPI.AssistantResponseFormatOption;
   export type AssistantToolChoice = ThreadsAPI.AssistantToolChoice;
@@ -1685,6 +1697,8 @@ export namespace Threads {
   export type MessageDeleted = MessagesAPI.MessageDeleted;
   export type MessageDelta = MessagesAPI.MessageDelta;
   export type MessageDeltaEvent = MessagesAPI.MessageDeltaEvent;
+  export type RefusalContentBlock = MessagesAPI.RefusalContentBlock;
+  export type RefusalDeltaBlock = MessagesAPI.RefusalDeltaBlock;
   export type Text = MessagesAPI.Text;
   export type TextContentBlock = MessagesAPI.TextContentBlock;
   export type TextContentBlockParam = MessagesAPI.TextContentBlockParam;

@@ -6,6 +6,7 @@ export {
   type ChatCompletionChunk,
   type ChatCompletionContentPart,
   type ChatCompletionContentPartImage,
+  type ChatCompletionContentPartRefusal,
   type ChatCompletionContentPartText,
   type ChatCompletionCreateParams,
   type ChatCompletionCreateParamsNonStreaming,

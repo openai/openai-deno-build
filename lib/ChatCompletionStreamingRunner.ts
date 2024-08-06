@@ -1,7 +1,6 @@
 import {
   type ChatCompletionChunk,
   type ChatCompletionCreateParamsStreaming,
-  Completions,
 } from "../resources/chat/completions.ts";
 import {
   type AbstractChatCompletionRunnerEvents,
@@ -17,6 +16,8 @@ import {
   ChatCompletionSnapshot,
   ChatCompletionStream,
 } from "./ChatCompletionStream.ts";
+import OpenAI from "../mod.ts";
+import { AutoParseableTool } from "./parser.ts";
 
 export interface ChatCompletionStreamEvents
   extends AbstractChatCompletionRunnerEvents {
@@ -43,26 +44,27 @@ export type ChatCompletionStreamingToolRunnerParams<
     "tools"
   >
   & {
-    tools: RunnableTools<FunctionsArgs>;
+    tools: RunnableTools<FunctionsArgs> | AutoParseableTool<any, true>[];
   };
 
-export class ChatCompletionStreamingRunner extends ChatCompletionStream
+export class ChatCompletionStreamingRunner<ParsedT = null>
+  extends ChatCompletionStream<ParsedT>
   implements AsyncIterable<ChatCompletionChunk> {
   static override fromReadableStream(
     stream: ReadableStream,
-  ): ChatCompletionStreamingRunner {
-    const runner = new ChatCompletionStreamingRunner();
+  ): ChatCompletionStreamingRunner<null> {
+    const runner = new ChatCompletionStreamingRunner(null);
     runner._run(() => runner._fromReadableStream(stream));
     return runner;
   }
 
   /** @deprecated - please use `runTools` instead. */
   static runFunctions<T extends (string | object)[]>(
-    completions: Completions,
+    client: OpenAI,
     params: ChatCompletionStreamingFunctionRunnerParams<T>,
     options?: RunnerOptions,
-  ): ChatCompletionStreamingRunner {
-    const runner = new ChatCompletionStreamingRunner();
+  ): ChatCompletionStreamingRunner<null> {
+    const runner = new ChatCompletionStreamingRunner(null);
     const opts = {
       ...options,
       headers: {
@@ -70,21 +72,24 @@ export class ChatCompletionStreamingRunner extends ChatCompletionStream
         "X-Stainless-Helper-Method": "runFunctions",
       },
     };
-    runner._run(() => runner._runFunctions(completions, params, opts));
+    runner._run(() => runner._runFunctions(client, params, opts));
     return runner;
   }
 
-  static runTools<T extends (string | object)[]>(
-    completions: Completions,
+  static runTools<T extends (string | object)[], ParsedT = null>(
+    client: OpenAI,
     params: ChatCompletionStreamingToolRunnerParams<T>,
     options?: RunnerOptions,
-  ): ChatCompletionStreamingRunner {
-    const runner = new ChatCompletionStreamingRunner();
+  ): ChatCompletionStreamingRunner<ParsedT> {
+    const runner = new ChatCompletionStreamingRunner<ParsedT>(
+      // @ts-expect-error TODO these types are incompatible
+      params,
+    );
     const opts = {
       ...options,
       headers: { ...options?.headers, "X-Stainless-Helper-Method": "runTools" },
     };
-    runner._run(() => runner._runTools(completions, params, opts));
+    runner._run(() => runner._runTools(client, params, opts));
     return runner;
   }
 }
