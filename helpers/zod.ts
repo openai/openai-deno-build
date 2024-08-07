@@ -8,8 +8,15 @@ import {
 } from "../lib/parser.ts";
 import { zodToJsonSchema as _zodToJsonSchema } from "../_vendor/zod-to-json-schema/mod.ts";
 
-function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
-  return _zodToJsonSchema(schema, { openaiStrictMode: true });
+function zodToJsonSchema(
+  schema: z.ZodType,
+  options: { name: string },
+): Record<string, unknown> {
+  return _zodToJsonSchema(schema, {
+    openaiStrictMode: true,
+    name: options.name,
+    nameStrategy: "duplicate-ref",
+  });
 }
 
 /**
@@ -61,7 +68,7 @@ export function zodResponseFormat<ZodInput extends z.ZodType>(
         ...props,
         name,
         strict: true,
-        schema: zodToJsonSchema(zodObject),
+        schema: zodToJsonSchema(zodObject, { name }),
       },
     },
     (content) => zodObject.parse(JSON.parse(content)),
@@ -91,7 +98,7 @@ export function zodFunction<Parameters extends z.ZodType>(options: {
       type: "function",
       function: {
         name: options.name,
-        parameters: zodToJsonSchema(options.parameters),
+        parameters: zodToJsonSchema(options.parameters, { name: options.name }),
         strict: true,
         ...(options.description
           ? { description: options.description }

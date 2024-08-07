@@ -59,6 +59,10 @@ const zodToJsonSchema = <Target extends Targets = "jsonSchema7">(
     main.title = title;
   }
 
+  const rootRefPath = name
+    ? [...refs.basePath, refs.definitionPath, name].join("/")
+    : null;
+
   const combined: ReturnType<typeof zodToJsonSchema<Target>> =
     name === undefined
       ? definitions
@@ -67,6 +71,22 @@ const zodToJsonSchema = <Target extends Targets = "jsonSchema7">(
           [refs.definitionPath]: definitions,
         }
         : main
+      : refs.nameStrategy === "duplicate-ref"
+      ? {
+        ...main,
+        ...(definitions || refs.seenRefs.has(rootRefPath!)
+          ? {
+            [refs.definitionPath]: {
+              ...definitions,
+              // only actually duplicate the schema definition if it was ever referenced
+              // otherwise the duplication is completely pointless
+              ...(refs.seenRefs.has(rootRefPath!)
+                ? { [name]: main }
+                : undefined),
+            },
+          }
+          : undefined),
+      }
       : {
         $ref: [
           ...(refs.$refStrategy === "relative" ? [] : refs.basePath),
