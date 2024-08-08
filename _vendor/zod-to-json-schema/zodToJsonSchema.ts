@@ -2,6 +2,7 @@ import { ZodSchema } from "npm:zod";
 import { Options, Targets } from "./Options.ts";
 import { JsonSchema7Type, parseDef } from "./parseDef.ts";
 import { getRefs } from "./Refs.ts";
+import { isEmptyObj, zodDef } from "./util.ts";
 
 const zodToJsonSchema = <Target extends Targets = "jsonSchema7">(
   schema: ZodSchema<any>,
@@ -15,23 +16,6 @@ const zodToJsonSchema = <Target extends Targets = "jsonSchema7">(
   };
 } => {
   const refs = getRefs(options);
-
-  const definitions = typeof options === "object" && options.definitions
-    ? Object.entries(options.definitions).reduce(
-      (acc, [name, schema]) => ({
-        ...acc,
-        [name]: parseDef(
-          schema._def,
-          {
-            ...refs,
-            currentPath: [...refs.basePath, refs.definitionPath, name],
-          },
-          true,
-        ) ?? {},
-      }),
-      {},
-    )
-    : undefined;
 
   const name = typeof options === "string"
     ? options
@@ -59,9 +43,22 @@ const zodToJsonSchema = <Target extends Targets = "jsonSchema7">(
     main.title = title;
   }
 
-  const rootRefPath = name
-    ? [...refs.basePath, refs.definitionPath, name].join("/")
-    : null;
+  const definitions = !isEmptyObj(refs.definitions)
+    ? Object.entries(refs.definitions).reduce(
+      (acc, [name, schema]) => ({
+        ...acc,
+        [name]: parseDef(
+          zodDef(schema),
+          {
+            ...refs,
+            currentPath: [...refs.basePath, refs.definitionPath, name],
+          },
+          true,
+        ) ?? {},
+      }),
+      {},
+    )
+    : undefined;
 
   const combined: ReturnType<typeof zodToJsonSchema<Target>> =
     name === undefined
@@ -74,15 +71,13 @@ const zodToJsonSchema = <Target extends Targets = "jsonSchema7">(
       : refs.nameStrategy === "duplicate-ref"
       ? {
         ...main,
-        ...(definitions || refs.seenRefs.has(rootRefPath!)
+        ...(definitions || refs.seenRefs.size
           ? {
             [refs.definitionPath]: {
               ...definitions,
               // only actually duplicate the schema definition if it was ever referenced
               // otherwise the duplication is completely pointless
-              ...(refs.seenRefs.has(rootRefPath!)
-                ? { [name]: main }
-                : undefined),
+              ...(refs.seenRefs.size ? { [name]: main } : undefined),
             },
           }
           : undefined),

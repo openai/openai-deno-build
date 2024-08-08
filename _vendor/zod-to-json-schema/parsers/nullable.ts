@@ -22,7 +22,7 @@ export function parseNullableDef(
     ) &&
     (!def.innerType._def.checks || !def.innerType._def.checks.length)
   ) {
-    if (refs.target === "openApi3") {
+    if (refs.target === "openApi3" || refs.nullableStrategy === "property") {
       return {
         type: primitiveMappings[
           def.innerType._def.typeName as keyof typeof primitiveMappings

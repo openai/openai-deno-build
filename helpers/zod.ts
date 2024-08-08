@@ -16,6 +16,8 @@ function zodToJsonSchema(
     openaiStrictMode: true,
     name: options.name,
     nameStrategy: "duplicate-ref",
+    $refStrategy: "extract-to-root",
+    nullableStrategy: "property",
   });
 }
 
