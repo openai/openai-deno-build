@@ -44,10 +44,9 @@ export type Options<Target extends Targets = "jsonSchema7"> = {
   openaiStrictMode?: boolean;
 };
 
-export const defaultOptions: Options = {
+const defaultOptions: Omit<Options, "definitions" | "basePath"> = {
   name: undefined,
   $refStrategy: "root",
-  basePath: ["#"],
   effectStrategy: "input",
   pipeStrategy: "all",
   dateStrategy: "format:date-time",
@@ -57,7 +56,6 @@ export const defaultOptions: Options = {
   definitionPath: "definitions",
   target: "jsonSchema7",
   strictUnions: false,
-  definitions: {},
   errorMessages: false,
   markdownDescription: false,
   patternStrategy: "escape",
@@ -69,13 +67,21 @@ export const defaultOptions: Options = {
 
 export const getDefaultOptions = <Target extends Targets>(
   options: Partial<Options<Target>> | string | undefined,
-) =>
-  (typeof options === "string"
-    ? {
-      ...defaultOptions,
-      name: options,
-    }
-    : {
-      ...defaultOptions,
-      ...options,
-    }) as Options<Target>;
+) => {
+  // We need to add `definitions` here as we may mutate it
+  return (
+    typeof options === "string"
+      ? {
+        ...defaultOptions,
+        basePath: ["#"],
+        definitions: {},
+        name: options,
+      }
+      : {
+        ...defaultOptions,
+        basePath: ["#"],
+        definitions: {},
+        ...options,
+      }
+  ) as Options<Target>;
+};
