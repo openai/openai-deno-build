@@ -35,6 +35,7 @@ export {
   type FileListParams,
   type FileObject,
   FileObjectsPage,
+  type FilePurpose,
   Files,
 } from "./files.ts";
 export { FineTuning } from "./fine-tuning/fine-tuning.ts";

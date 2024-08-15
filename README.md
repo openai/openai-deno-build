@@ -6,7 +6,7 @@ there to read the source and docs, file issues, etc.
 Usage:
 
 ```ts
-import OpenAI from "https://deno.land/x/openai@v4.55.7/mod.ts";
+import OpenAI from "https://deno.land/x/openai@v4.55.8/mod.ts";
 
 const client = new OpenAI();
 ```
