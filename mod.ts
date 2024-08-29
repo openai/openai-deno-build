@@ -2,7 +2,10 @@
 
 import * as Errors from "./error.ts";
 import * as Uploads from "./uploads.ts";
+
 import { type Agent, type RequestInit } from "./_shims/mod.ts";
+import { qs } from "https://deno.land/x/deno_qs@0.0.1/mod.ts";
+
 import * as Core from "./core.ts";
 import * as Pagination from "./pagination.ts";
 import * as API from "./resources/mod.ts";
@@ -183,6 +186,10 @@ export class OpenAI extends Core.APIClient {
 
   protected override authHeaders(opts: Core.FinalRequestOptions): Core.Headers {
     return { Authorization: `Bearer ${this.apiKey}` };
+  }
+
+  protected override stringifyQuery(query: Record<string, unknown>): string {
+    return qs.stringify(query, { arrayFormat: "brackets" });
   }
 
   static OpenAI = this;
