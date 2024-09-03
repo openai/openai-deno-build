@@ -83,8 +83,9 @@ export class ChatCompletionRunner<ParsedT = null>
   override _addMessage(
     this: ChatCompletionRunner<ParsedT>,
     message: ChatCompletionMessageParam,
+    emit: boolean = true,
   ) {
-    super._addMessage(message);
+    super._addMessage(message, emit);
     if (isAssistantMessage(message) && message.content) {
       this._emit("content", message.content as string);
     }
