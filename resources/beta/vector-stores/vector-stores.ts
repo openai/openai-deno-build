@@ -97,6 +97,77 @@ export class VectorStores extends APIResource {
 export class VectorStoresPage extends CursorPage<VectorStore> {}
 
 /**
+ * The default strategy. This strategy currently uses a `max_chunk_size_tokens` of
+ * `800` and `chunk_overlap_tokens` of `400`.
+ */
+export interface AutoFileChunkingStrategyParam {
+  /**
+   * Always `auto`.
+   */
+  type: "auto";
+}
+
+/**
+ * The strategy used to chunk the file.
+ */
+export type FileChunkingStrategy =
+  | StaticFileChunkingStrategyObject
+  | OtherFileChunkingStrategyObject;
+
+/**
+ * The chunking strategy used to chunk the file(s). If not set, will use the `auto`
+ * strategy. Only applicable if `file_ids` is non-empty.
+ */
+export type FileChunkingStrategyParam =
+  | AutoFileChunkingStrategyParam
+  | StaticFileChunkingStrategyParam;
+
+/**
+ * This is returned when the chunking strategy is unknown. Typically, this is
+ * because the file was indexed before the `chunking_strategy` concept was
+ * introduced in the API.
+ */
+export interface OtherFileChunkingStrategyObject {
+  /**
+   * Always `other`.
+   */
+  type: "other";
+}
+
+export interface StaticFileChunkingStrategy {
+  /**
+   * The number of tokens that overlap between chunks. The default value is `400`.
+   *
+   * Note that the overlap must not exceed half of `max_chunk_size_tokens`.
+   */
+  chunk_overlap_tokens: number;
+
+  /**
+   * The maximum number of tokens in each chunk. The default value is `800`. The
+   * minimum value is `100` and the maximum value is `4096`.
+   */
+  max_chunk_size_tokens: number;
+}
+
+export interface StaticFileChunkingStrategyObject {
+  static: StaticFileChunkingStrategy;
+
+  /**
+   * Always `static`.
+   */
+  type: "static";
+}
+
+export interface StaticFileChunkingStrategyParam {
+  static: StaticFileChunkingStrategy;
+
+  /**
+   * Always `static`.
+   */
+  type: "static";
+}
+
+/**
  * A vector store is a collection of processed files can be used by the
  * `file_search` tool.
  */
@@ -217,9 +288,7 @@ export interface VectorStoreCreateParams {
    * The chunking strategy used to chunk the file(s). If not set, will use the `auto`
    * strategy. Only applicable if `file_ids` is non-empty.
    */
-  chunking_strategy?:
-    | VectorStoreCreateParams.Auto
-    | VectorStoreCreateParams.Static;
+  chunking_strategy?: FileChunkingStrategyParam;
 
   /**
    * The expiration policy for a vector store.
@@ -248,43 +317,6 @@ export interface VectorStoreCreateParams {
 }
 
 export namespace VectorStoreCreateParams {
-  /**
-   * The default strategy. This strategy currently uses a `max_chunk_size_tokens` of
-   * `800` and `chunk_overlap_tokens` of `400`.
-   */
-  export interface Auto {
-    /**
-     * Always `auto`.
-     */
-    type: "auto";
-  }
-
-  export interface Static {
-    static: Static.Static;
-
-    /**
-     * Always `static`.
-     */
-    type: "static";
-  }
-
-  export namespace Static {
-    export interface Static {
-      /**
-       * The number of tokens that overlap between chunks. The default value is `400`.
-       *
-       * Note that the overlap must not exceed half of `max_chunk_size_tokens`.
-       */
-      chunk_overlap_tokens: number;
-
-      /**
-       * The maximum number of tokens in each chunk. The default value is `800`. The
-       * minimum value is `100` and the maximum value is `4096`.
-       */
-      max_chunk_size_tokens: number;
-    }
-  }
-
   /**
    * The expiration policy for a vector store.
    */
@@ -357,6 +389,19 @@ export interface VectorStoreListParams extends CursorPageParams {
 }
 
 export namespace VectorStores {
+  export type AutoFileChunkingStrategyParam =
+    VectorStoresAPI.AutoFileChunkingStrategyParam;
+  export type FileChunkingStrategy = VectorStoresAPI.FileChunkingStrategy;
+  export type FileChunkingStrategyParam =
+    VectorStoresAPI.FileChunkingStrategyParam;
+  export type OtherFileChunkingStrategyObject =
+    VectorStoresAPI.OtherFileChunkingStrategyObject;
+  export type StaticFileChunkingStrategy =
+    VectorStoresAPI.StaticFileChunkingStrategy;
+  export type StaticFileChunkingStrategyObject =
+    VectorStoresAPI.StaticFileChunkingStrategyObject;
+  export type StaticFileChunkingStrategyParam =
+    VectorStoresAPI.StaticFileChunkingStrategyParam;
   export type VectorStore = VectorStoresAPI.VectorStore;
   export type VectorStoreDeleted = VectorStoresAPI.VectorStoreDeleted;
   export import VectorStoresPage = VectorStoresAPI.VectorStoresPage;

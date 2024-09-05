@@ -37,6 +37,13 @@ export {
 export { Beta } from "./beta.ts";
 export { Chat } from "./chat/mod.ts";
 export {
+  type AutoFileChunkingStrategyParam,
+  type FileChunkingStrategy,
+  type FileChunkingStrategyParam,
+  type OtherFileChunkingStrategyObject,
+  type StaticFileChunkingStrategy,
+  type StaticFileChunkingStrategyObject,
+  type StaticFileChunkingStrategyParam,
   type VectorStore,
   type VectorStoreCreateParams,
   type VectorStoreDeleted,
