@@ -5,8 +5,9 @@ import { Refs } from "../Refs.ts";
 export function parseEffectsDef(
   _def: ZodEffectsDef,
   refs: Refs,
+  forceResolution: boolean,
 ): JsonSchema7Type | undefined {
   return refs.effectStrategy === "input"
-    ? parseDef(_def.schema._def, refs)
+    ? parseDef(_def.schema._def, refs, forceResolution)
     : {};
 }

@@ -116,7 +116,12 @@ export function parseDef(
 
   refs.seen.set(def, newItem);
 
-  const jsonSchema = selectParser(def, (def as any).typeName, refs);
+  const jsonSchema = selectParser(
+    def,
+    (def as any).typeName,
+    refs,
+    forceResolution,
+  );
 
   if (jsonSchema) {
     addMeta(def, refs, jsonSchema);
@@ -191,6 +196,7 @@ const selectParser = (
   def: any,
   typeName: ZodFirstPartyTypeKind,
   refs: Refs,
+  forceResolution: boolean,
 ): JsonSchema7Type | undefined => {
   switch (typeName) {
     case ZodFirstPartyTypeKind.ZodString:
@@ -242,7 +248,7 @@ const selectParser = (
     case ZodFirstPartyTypeKind.ZodNever:
       return parseNeverDef();
     case ZodFirstPartyTypeKind.ZodEffects:
-      return parseEffectsDef(def, refs);
+      return parseEffectsDef(def, refs, forceResolution);
     case ZodFirstPartyTypeKind.ZodAny:
       return parseAnyDef();
     case ZodFirstPartyTypeKind.ZodUnknown:
