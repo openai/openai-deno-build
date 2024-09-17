@@ -37,7 +37,9 @@ type APIResponseProps = {
   controller: AbortController;
 };
 
-async function defaultParseResponse<T>(props: APIResponseProps): Promise<T> {
+async function defaultParseResponse<T>(
+  props: APIResponseProps,
+): Promise<WithRequestID<T>> {
   const { response } = props;
   if (props.options.stream) {
     debug(
@@ -63,11 +65,11 @@ async function defaultParseResponse<T>(props: APIResponseProps): Promise<T> {
 
   // fetch refuses to read the body when the status code is 204.
   if (response.status === 204) {
-    return null as T;
+    return null as WithRequestID<T>;
   }
 
   if (props.options.__binaryResponse) {
-    return response as unknown as T;
+    return response as unknown as WithRequestID<T>;
   }
 
   const contentType = response.headers.get("content-type");
@@ -78,27 +80,43 @@ async function defaultParseResponse<T>(props: APIResponseProps): Promise<T> {
 
     debug("response", response.status, response.url, response.headers, json);
 
-    return json as T;
+    return _addRequestID(json, response);
   }
 
   const text = await response.text();
   debug("response", response.status, response.url, response.headers, text);
 
   // TODO handle blob, arraybuffer, other content types, etc.
-  return text as unknown as T;
+  return text as unknown as WithRequestID<T>;
+}
+
+type WithRequestID<T> = T extends Array<any> | Response | AbstractPage<any> ? T
+  : T extends Record<string, any> ? T & { _request_id?: string | null }
+  : T;
+
+function _addRequestID<T>(value: T, response: Response): WithRequestID<T> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return value as WithRequestID<T>;
+  }
+
+  return Object.defineProperty(value, "_request_id", {
+    value: response.headers.get("x-request-id"),
+    enumerable: false,
+  }) as WithRequestID<T>;
 }
 
 /**
  * A subclass of `Promise` providing additional helper methods
  * for interacting with the SDK.
  */
-export class APIPromise<T> extends Promise<T> {
-  private parsedPromise: Promise<T> | undefined;
+export class APIPromise<T> extends Promise<WithRequestID<T>> {
+  private parsedPromise: Promise<WithRequestID<T>> | undefined;
 
   constructor(
     private responsePromise: Promise<APIResponseProps>,
-    private parseResponse: (props: APIResponseProps) => PromiseOrValue<T> =
-      defaultParseResponse,
+    private parseResponse: (
+      props: APIResponseProps,
+    ) => PromiseOrValue<WithRequestID<T>> = defaultParseResponse,
   ) {
     super((resolve) => {
       // this is maybe a bit weird but this has to be a no-op to not implicitly
@@ -111,7 +129,11 @@ export class APIPromise<T> extends Promise<T> {
   _thenUnwrap<U>(transform: (data: T) => U): APIPromise<U> {
     return new APIPromise(
       this.responsePromise,
-      async (props) => transform(await this.parseResponse(props)),
+      async (props) =>
+        _addRequestID(
+          transform(await this.parseResponse(props)),
+          props.response,
+        ),
     );
   }
 
@@ -151,16 +173,18 @@ export class APIPromise<T> extends Promise<T> {
     return { data, response };
   }
 
-  private parse(): Promise<T> {
+  private parse(): Promise<WithRequestID<T>> {
     if (!this.parsedPromise) {
-      this.parsedPromise = this.responsePromise.then(this.parseResponse);
+      this.parsedPromise = this.responsePromise.then(
+        this.parseResponse,
+      ) as any as Promise<WithRequestID<T>>;
     }
     return this.parsedPromise;
   }
 
-  override then<TResult1 = T, TResult2 = never>(
+  override then<TResult1 = WithRequestID<T>, TResult2 = never>(
     onfulfilled?:
-      | ((value: T) => TResult1 | PromiseLike<TResult1>)
+      | ((value: WithRequestID<T>) => TResult1 | PromiseLike<TResult1>)
       | undefined
       | null,
     onrejected?:
@@ -176,11 +200,13 @@ export class APIPromise<T> extends Promise<T> {
       | ((reason: any) => TResult | PromiseLike<TResult>)
       | undefined
       | null,
-  ): Promise<T | TResult> {
+  ): Promise<WithRequestID<T> | TResult> {
     return this.parse().catch(onrejected);
   }
 
-  override finally(onfinally?: (() => void) | undefined | null): Promise<T> {
+  override finally(
+    onfinally?: (() => void) | undefined | null,
+  ): Promise<WithRequestID<T>> {
     return this.parse().finally(onfinally);
   }
 }
@@ -823,7 +849,7 @@ export class PagePromise<
           props.response,
           await defaultParseResponse(props),
           props.options,
-        ),
+        ) as WithRequestID<PageClass>,
     );
   }
 

@@ -2,10 +2,8 @@
 
 import * as Errors from "./error.ts";
 import * as Uploads from "./uploads.ts";
-
 import { type Agent, type RequestInit } from "./_shims/mod.ts";
-import { qs } from "https://deno.land/x/deno_qs@0.0.1/mod.ts";
-
+import * as qs from "./internal/qs/mod.ts";
 import * as Core from "./core.ts";
 import * as Pagination from "./pagination.ts";
 import * as API from "./resources/mod.ts";
