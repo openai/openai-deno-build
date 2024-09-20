@@ -26,6 +26,7 @@ export {
   type CreateEmbeddingResponse,
   type Embedding,
   type EmbeddingCreateParams,
+  type EmbeddingModel,
   Embeddings,
 } from "./embeddings.ts";
 export {
