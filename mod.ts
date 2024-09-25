@@ -313,6 +313,7 @@ export namespace OpenAI {
 
   export import Audio = API.Audio;
   export type AudioModel = API.AudioModel;
+  export type AudioResponseFormat = API.AudioResponseFormat;
 
   export import Moderations = API.Moderations;
   export type Moderation = API.Moderation;

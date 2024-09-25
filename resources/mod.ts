@@ -2,7 +2,11 @@
 
 export * from "./chat/mod.ts";
 export * from "./shared.ts";
-export { Audio, type AudioModel } from "./audio/audio.ts";
+export {
+  Audio,
+  type AudioModel,
+  type AudioResponseFormat,
+} from "./audio/audio.ts";
 export {
   type Batch,
   type BatchCreateParams,
