@@ -58,8 +58,11 @@ export {
   type Moderation,
   type ModerationCreateParams,
   type ModerationCreateResponse,
+  type ModerationImageURLInput,
   type ModerationModel,
+  type ModerationMultiModalInput,
   Moderations,
+  type ModerationTextInput,
 } from "./moderations.ts";
 export {
   type Upload,

@@ -317,7 +317,10 @@ export namespace OpenAI {
 
   export import Moderations = API.Moderations;
   export type Moderation = API.Moderation;
+  export type ModerationImageURLInput = API.ModerationImageURLInput;
   export type ModerationModel = API.ModerationModel;
+  export type ModerationMultiModalInput = API.ModerationMultiModalInput;
+  export type ModerationTextInput = API.ModerationTextInput;
   export type ModerationCreateResponse = API.ModerationCreateResponse;
   export type ModerationCreateParams = API.ModerationCreateParams;
 
