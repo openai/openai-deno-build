@@ -33,11 +33,26 @@ export namespace Audio {
   export type AudioResponseFormat = AudioAPI.AudioResponseFormat;
   export import Transcriptions = TranscriptionsAPI.Transcriptions;
   export type Transcription = TranscriptionsAPI.Transcription;
-  export type TranscriptionCreateParams =
-    TranscriptionsAPI.TranscriptionCreateParams;
+  export type TranscriptionSegment = TranscriptionsAPI.TranscriptionSegment;
+  export type TranscriptionVerbose = TranscriptionsAPI.TranscriptionVerbose;
+  export type TranscriptionWord = TranscriptionsAPI.TranscriptionWord;
+  export type TranscriptionCreateResponse =
+    TranscriptionsAPI.TranscriptionCreateResponse;
+  export type TranscriptionCreateParams<
+    ResponseFormat extends AudioAPI.AudioResponseFormat | undefined =
+      | AudioAPI.AudioResponseFormat
+      | undefined,
+  > = TranscriptionsAPI.TranscriptionCreateParams<ResponseFormat>;
   export import Translations = TranslationsAPI.Translations;
   export type Translation = TranslationsAPI.Translation;
-  export type TranslationCreateParams = TranslationsAPI.TranslationCreateParams;
+  export type TranslationVerbose = TranslationsAPI.TranslationVerbose;
+  export type TranslationCreateResponse =
+    TranslationsAPI.TranslationCreateResponse;
+  export type TranslationCreateParams<
+    ResponseFormat extends AudioAPI.AudioResponseFormat | undefined =
+      | AudioAPI.AudioResponseFormat
+      | undefined,
+  > = TranslationsAPI.TranslationCreateParams<ResponseFormat>;
   export import Speech = SpeechAPI.Speech;
   export type SpeechModel = SpeechAPI.SpeechModel;
   export type SpeechCreateParams = SpeechAPI.SpeechCreateParams;

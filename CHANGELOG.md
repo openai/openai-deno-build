@@ -1,5 +1,37 @@
 # Changelog
 
+## 4.66.1 (2024-09-30)
+
+Full Changelog:
+[v4.66.0...v4.66.1](https://github.com/openai/openai-node/compare/v4.66.0...v4.66.1)
+
+### Bug Fixes
+
+- **audio:** add fallback overload types
+  ([0c00a13](https://github.com/openai/openai-node/commit/0c00a13dd864b974d3376c905647209e4a79f244))
+- **audio:** use export type
+  ([1519100](https://github.com/openai/openai-node/commit/1519100e530e08e7683549d0bcdd919b9c2d1654))
+
+## 4.66.0 (2024-09-27)
+
+Full Changelog:
+[v4.65.0...v4.66.0](https://github.com/openai/openai-node/compare/v4.65.0...v4.66.0)
+
+### Features
+
+- **client:** add request_id to `.withResponse()`
+  ([#1095](https://github.com/openai/openai-node/issues/1095))
+  ([2d0f565](https://github.com/openai/openai-node/commit/2d0f565f124a8862bc24214cc3ddce9db0ba75bc))
+
+### Bug Fixes
+
+- **audio:** correct types for transcriptions / translations
+  ([#1104](https://github.com/openai/openai-node/issues/1104))
+  ([96e86c2](https://github.com/openai/openai-node/commit/96e86c214ba79d50035b61e5daa3489f082512c4))
+- **client:** correct types for transcriptions / translations
+  ([#1105](https://github.com/openai/openai-node/issues/1105))
+  ([fa16ebb](https://github.com/openai/openai-node/commit/fa16ebbb314ebc7c274d27f0148d248edf48e055))
+
 ## 4.65.0 (2024-09-26)
 
 Full Changelog:

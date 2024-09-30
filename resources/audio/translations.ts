@@ -4,15 +4,32 @@ import { APIResource } from "../../resource.ts";
 import * as Core from "../../core.ts";
 import * as TranslationsAPI from "./translations.ts";
 import * as AudioAPI from "./audio.ts";
+import * as TranscriptionsAPI from "./transcriptions.ts";
 
 export class Translations extends APIResource {
   /**
    * Translates audio into English.
    */
   create(
+    body: TranslationCreateParams<"json" | undefined>,
+    options?: Core.RequestOptions,
+  ): Core.APIPromise<Translation>;
+  create(
+    body: TranslationCreateParams<"verbose_json">,
+    options?: Core.RequestOptions,
+  ): Core.APIPromise<TranslationVerbose>;
+  create(
+    body: TranslationCreateParams<"text" | "srt" | "vtt">,
+    options?: Core.RequestOptions,
+  ): Core.APIPromise<string>;
+  create(
     body: TranslationCreateParams,
     options?: Core.RequestOptions,
-  ): Core.APIPromise<Translation> {
+  ): Core.APIPromise<Translation>;
+  create(
+    body: TranslationCreateParams,
+    options?: Core.RequestOptions,
+  ): Core.APIPromise<TranslationCreateResponse | string> {
     return this._client.post(
       "/audio/translations",
       Core.multipartFormRequestOptions({ body, ...options }),
@@ -24,7 +41,35 @@ export interface Translation {
   text: string;
 }
 
-export interface TranslationCreateParams {
+export interface TranslationVerbose {
+  /**
+   * The duration of the input audio.
+   */
+  duration: string;
+
+  /**
+   * The language of the output translation (always `english`).
+   */
+  language: string;
+
+  /**
+   * The translated text.
+   */
+  text: string;
+
+  /**
+   * Segments of the translated text and their corresponding details.
+   */
+  segments?: Array<TranscriptionsAPI.TranscriptionSegment>;
+}
+
+export type TranslationCreateResponse = Translation | TranslationVerbose;
+
+export interface TranslationCreateParams<
+  ResponseFormat extends AudioAPI.AudioResponseFormat | undefined =
+    | AudioAPI.AudioResponseFormat
+    | undefined,
+> {
   /**
    * The audio file object (not file name) translate, in one of these formats: flac,
    * mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
@@ -49,7 +94,7 @@ export interface TranslationCreateParams {
    * The format of the output, in one of these options: `json`, `text`, `srt`,
    * `verbose_json`, or `vtt`.
    */
-  response_format?: AudioAPI.AudioResponseFormat;
+  response_format?: ResponseFormat;
 
   /**
    * The sampling temperature, between 0 and 1. Higher values like 0.8 will make the
@@ -63,5 +108,12 @@ export interface TranslationCreateParams {
 
 export namespace Translations {
   export type Translation = TranslationsAPI.Translation;
-  export type TranslationCreateParams = TranslationsAPI.TranslationCreateParams;
+  export type TranslationVerbose = TranslationsAPI.TranslationVerbose;
+  export type TranslationCreateResponse =
+    TranslationsAPI.TranslationCreateResponse;
+  export type TranslationCreateParams<
+    ResponseFormat extends AudioAPI.AudioResponseFormat | undefined =
+      | AudioAPI.AudioResponseFormat
+      | undefined,
+  > = TranslationsAPI.TranslationCreateParams<ResponseFormat>;
 }
