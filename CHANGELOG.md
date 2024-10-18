@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.68.1 (2024-10-18)
+
+Full Changelog:
+[v4.68.0...v4.68.1](https://github.com/openai/openai-node/compare/v4.68.0...v4.68.1)
+
+### Bug Fixes
+
+- **client:** respect x-stainless-retry-count default headers
+  ([#1138](https://github.com/openai/openai-node/issues/1138))
+  ([266717b](https://github.com/openai/openai-node/commit/266717b3301828c7df735064a380a055576183bc))
+
 ## 4.68.0 (2024-10-17)
 
 Full Changelog:
